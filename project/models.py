@@ -1,4 +1,3 @@
-
 #set up  db in __init__.py under my projects folder
 
 
@@ -14,6 +13,38 @@ from flask_login import UserMixin
 ##def load_user(user_id):
 ##	return User.query.get(user_id)
 
+
+class Department(db.Model,UserMixin):
+    
+    name = db.Column(db.String(64))
+    
+    school = db.Column(db.String(128))
+
+    program = db.Column(db.String(128))
+
+    def __init__(self,name,school,program):
+        
+        self.name=name
+        
+        self.school=school
+
+        self.program=program
+
+        
+        
+class Program(db.Model,UserMixin):
+    
+    name = db.Column(db.String(64))
+    
+    student = db.Column(db.String(128))
+
+    def __init__(self,name,student):
+        
+        self.name=name
+        
+        self.student=student
+
+        
 
 class Admin(db.Model,UserMixin):
     
@@ -45,6 +76,7 @@ class User(db.Model,UserMixin):
         self.password_hash=generate_password_hash(password)
 
     def __repr__(self):
+        
         if self.student_n0:
                 return '{} /n {} /n {}'.format(self.reg_no,self.student_no.project,self.student_no.supervisor,self.student_no.date_submit)
       
@@ -52,38 +84,81 @@ class User(db.Model,UserMixin):
         
 
 
-class Proposal(db.Model,UserMixin):
+class Project(db.Model,UserMixin):
 
-    project = db.Column(db.String(500))
+    title = db.Column(db.String(500))
+
+##    description = db.Column(db.String(500))
+##
+##    proposal = db.Column(db.String(2500))
+    reg_no = db.Column(db.String(25),unique=True,index=True)
 
     student_regno = db.Column(db.String(25), db.ForeignKey('User.reg_no'),nullable=False)
 
-    project_proposal=db.Column(db.LargeBinary)
+    report_uploadfile=db.Column(db.LargeBinary)
 
     supervisor=db.Column(db.String(120))
 
+    comments =db.Column(db.String(500))
+
     date_submit = db.Column(db.DateTime)
 
+    student_no = db.relationship('Proposal', backref='student', lazy=True)
 
-    def __init__(self,project,project_proposal,supervisor,date_submit):
 
-        self.project=project
+    def __init__(self,title,description,proposal,report_uploadfile,supervisor,student_regno,comments,date_submit):
+
+        self.title=title
+
+        self.description=description
+
+        self.proposal=proposal
 
         self.student_regno=student_regno
 
-        self.project_proposal=project_proposal
+        self.report_uploadfile=report_uploadfile
 
         self.supervisor=supervisor
 
+        self.comments =comments 
+
         self.date_submit=date_submit
+
+       
 
     def __repr__(self):
 
         return '{} /n {} /n {} /n {} /n {}'.format(self.project,self.project_proposal,self.supervisor,self.date_submit,self.student_regno)
 
     
- 
+ class Proposal(db.Model,UserMixin):
+
+    reg_no = db.Column(db.String(25),unique=True,index=True)
+
+    problem_statement = db.Column(db.String(1000))
+
+    abstract = db.Column(db.String(1000))
+
+    proposal_uploadfile=db.Column(db.LargeBinary)
+
+    student = db.Column(db.String(500))
+
+    student_regno = db.Column(db.String(25), db.ForeignKey('Project.reg_no'),nullable=False)
 
     
+
+    def __init__(self,problem_statement,abstract,proposal_uploadfile,student,student_no):
+        
+        self.problem_statement=problem_statement
+
+        self.abstract=abstract
+
+        self.proposal_uploadfile=proposal_uploadfile
+
+        self.student=student
+
+        self.student_no=student_no
     
+    
+db.create_all()    
 
