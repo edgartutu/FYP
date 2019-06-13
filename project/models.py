@@ -16,7 +16,7 @@ from flask_login import UserMixin
 
 class Department(db.Model,UserMixin):
     
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(64),primary_key=True)
     
     school = db.Column(db.String(128))
 
@@ -30,11 +30,14 @@ class Department(db.Model,UserMixin):
 
         self.program=program
 
+    def json(self):
+        return {'name':self.name,'school':self.school,'program':self.program}   
+
         
         
 class Program(db.Model,UserMixin):
     
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(64),primary_key=True)
     
     student = db.Column(db.String(128))
 
@@ -48,7 +51,7 @@ class Program(db.Model,UserMixin):
 
 class Admin(db.Model,UserMixin):
     
-    email = db.Column(db.String(64),unique=True,index=True)
+    email = db.Column(db.String(64),primary_key=True,unique=True,index=True)
     
     password_hash = db.Column(db.String(128))
 
@@ -63,11 +66,13 @@ class Admin(db.Model,UserMixin):
 
 class User(db.Model,UserMixin):
 
-    reg_no = db.Column(db.String(25),unique=True,index=True)
+    __tablename__='users'
+
+    reg_no = db.Column(db.String(25),primary_key=True,unique=True,index=True)
 
     password_hash = db.Column(db.String(128))
 
-    student_no = db.relationship('Proposal', backref='student', lazy=True)
+##    student_no = db.relationship('Proposal', backref='student', lazy=True)
 
     def __init__(self,email,password):
         
@@ -86,14 +91,16 @@ class User(db.Model,UserMixin):
 
 class Project(db.Model,UserMixin):
 
+    __tablename__='projects'
+
     title = db.Column(db.String(500))
 
 ##    description = db.Column(db.String(500))
 ##
 ##    proposal = db.Column(db.String(2500))
-    reg_no = db.Column(db.String(25),unique=True,index=True)
+    reg_no = db.Column(db.String(25),primary_key=True,unique=True,index=True)
 
-    student_regno = db.Column(db.String(25), db.ForeignKey('User.reg_no'),nullable=False)
+##    student_regno = db.Column(db.String(25), db.ForeignKey('users.reg_no'),nullable=False)
 
     report_uploadfile=db.Column(db.LargeBinary)
 
@@ -103,7 +110,7 @@ class Project(db.Model,UserMixin):
 
     date_submit = db.Column(db.DateTime)
 
-    student_no = db.relationship('Proposal', backref='student', lazy=True)
+##    student_no = db.relationship('Proposal', backref='student', lazy=True)
 
 
     def __init__(self,title,description,proposal,report_uploadfile,supervisor,student_regno,comments,date_submit):
@@ -131,9 +138,9 @@ class Project(db.Model,UserMixin):
         return '{} /n {} /n {} /n {} /n {}'.format(self.project,self.project_proposal,self.supervisor,self.date_submit,self.student_regno)
 
     
- class Proposal(db.Model,UserMixin):
+class Proposal(db.Model,UserMixin):
 
-    reg_no = db.Column(db.String(25),unique=True,index=True)
+    reg_no = db.Column(db.String(25),primary_key=True,unique=True,index=True)
 
     problem_statement = db.Column(db.String(1000))
 
@@ -143,7 +150,7 @@ class Project(db.Model,UserMixin):
 
     student = db.Column(db.String(500))
 
-    student_regno = db.Column(db.String(25), db.ForeignKey('Project.reg_no'),nullable=False)
+##    student_regno = db.Column(db.String(25), db.ForeignKey('projects.reg_no'),nullable=False)
 
     
 
