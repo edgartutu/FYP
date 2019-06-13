@@ -21,3 +21,4 @@ am still not sure of the relationships ,so i put that on hold.
 
 My __init__.py involves my database ,i have used sqlite for now,
 
+provide suggestions for the tables and columns .if there are any to add or remove
