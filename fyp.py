@@ -15,7 +15,7 @@ api=Api(app)
 
 class Proposal(Resource):
      def get(self,name,school,program):
-        dep=Department.query.filter_by(name=name)
+        dep=Department.query.filter_by(name=name).first()
 
         if dep:
             return dep.json()
@@ -53,8 +53,6 @@ class Allnames(Resource):
         return [x.json() for x in dep]
 
 
-
-    
 
 
 
