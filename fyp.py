@@ -6,7 +6,7 @@ api = Api(app)
 
 
 class Proposal(Resource):
-    def get(self, name, school, program):
+    def get(self, name):
         dep = Department.query.filter_by(name=name).first()
         if dep:
             return dep.json()
@@ -19,7 +19,7 @@ class Proposal(Resource):
         db.session.commit()
         return dep.json()
 
-    def delete(self, name, school, program):
+    def delete(self, name):
         dep = Department.query.filter_by(name=name)
         db.session.delete(dep)
         db.session.commit()
