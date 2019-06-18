@@ -27,7 +27,7 @@ class TestDepartments(BaseTestCase):
         self.assertFalse(app.config['SECRET_KEY'] is 'mysecretkey')
         self.assertTrue(app.config['DEBUG'])
         basedir = os.path.abspath(os.path.dirname(__file__))
-        self.assertTrue(
+        self.assertFalse(
             app.config['SQLALCHEMY_DATABASE_URI'] == 'sqlite:///'+os.path.join(basedir,'data.sqlite')
         )
    
