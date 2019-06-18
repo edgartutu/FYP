@@ -54,8 +54,8 @@ class User(db.Model, UserMixin):
 
 class Project(db.Model, UserMixin):
     __tablename__ = 'projects'
-    title = db.Column(db.String(500))
-    reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
+    title = db.Column(db.String(500),primary_key=True)
+##    reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
     supervisor = db.Column(db.String(120))
 
     report_uploadfile = db.Column(db.LargeBinary)
@@ -67,7 +67,7 @@ class Project(db.Model, UserMixin):
         self.title = title
         self.description = description
         self.proposal = proposal
-        self.student_regno = student_regno
+##        self.student_regno = student_regno
         self.report_uploadfile = report_uploadfile
         self.supervisor = supervisor
         self.comments = comments
@@ -79,18 +79,25 @@ class Project(db.Model, UserMixin):
 
 
 class Proposal(db.Model, UserMixin):
+    title=db.Column(db.String(100))
     reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
     problem_statement = db.Column(db.String(1000))
     abstract = db.Column(db.String(1000))
     proposal_uploadfile = db.Column(db.LargeBinary)
     student = db.Column(db.String(500))
 
-    def __init__(self, problem_statement, abstract, proposal_uploadfile, student, student_no):
+    def __init__(self, problem_statement, abstract, proposal_uploadfile, student, student_no,title):
+        self.title = title
         self.problem_statement = problem_statement
         self.abstract = abstract
         self.proposal_uploadfile = proposal_uploadfile
         self.student = student
         self.student_no = student_no
+
+    def json():
+        return {'title':self.title,'problem_statement':self.problem_statement, 'abstract':self.abstract,
+                'proposal_uploadfile':self.proposal_uploadfile,
+                'student':self.student, 'student_no':self.student_no}
 
 
 db.create_all()
