@@ -40,6 +40,10 @@ class TestDepartments(BaseTestCase):
         student={'name':'mutawe','school':'school','program':'program'}
         r = self.client.post('http://localhost:5000/department/<string:name>/<string:school>/<string:program>',data=json.dumps(student))
         self.assertEqual(r.status_code, 200)
+    def test_delete_department(self):
+        student={'name':'mutawe','school':'school','program':'program'}
+        r = self.client.post('http://localhost:5000/department/<string:name>/<string:school>/<string:program>',data=json.dumps(student))
+        self.assertEqual(r.status_code, 200)
 
     def post_user_data(self):
         ''' get the post data'''

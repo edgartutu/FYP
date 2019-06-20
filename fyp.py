@@ -1,11 +1,12 @@
 from project import app, db
 from project.models import User, Admin, Proposal, Department
 from flask_restful import Resource, Api
+from flask import request
 
 api = Api(app)
 
 
-class Department(Resource):
+class Departments(Resource):
     def get(self, name):
         dep = Department.query.filter_by(name=name).first()
         if dep:
@@ -19,25 +20,12 @@ class Department(Resource):
         db.session.commit()
         return dep.json()
 
-    def put():
-        json_data = request.get_json(force=True)
-        if not json_data:
-               return {'message': 'No input data provided'}, 400
-        data, errors = category_schema.load(json_data)
-        if errors:
-            return errors, 422
-        category = Department.query.filter_by(name=data['name']).first()
-        if not category:
-            return {'message': 'Category does not exist'}, 400
-        category.name = data['name']
-        db.session.commit()
-        result = category_schema.dump(category).data
-        return { "status": 'success', 'data': result }, 204
-
-    def delete(self, name):
-        dep = Department.query.filter_by(name=name)
+    def delete(self,name):
+        dep = Department.query.filter_by(name=name).first()
         db.session.delete(dep)
         db.session.commit()
+        return {'status':'succces'}
+        
 
 
 class AllnamesDepartments(Resource):
@@ -143,7 +131,9 @@ class Project(Resource):
             return proj.json()
 
         
-api.add_resource(Department, '/department/<string:name>/<string:school>/<string:program>')
+
+api.add_resource(Departments, '/department/<string:name>/<string:school>/<string:program>',endpoint='department')
+api.add_resource(Departments, '/department/delete/<string:name>',endpoint='department-delete')
 api.add_resource(AllnamesDepartments, '/students')
 api.add_resource(Proposal,'/proposal')
 api.add_resource(AllProposals,'/proposals')
