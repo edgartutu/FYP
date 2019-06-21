@@ -3,7 +3,7 @@ from project.models import User, Admin, Proposal, Department
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for
 from flask.ext.login import login_user,login_required, logout_user
-from .forms import LoginForm
+from .forms import LoginForm,ProposalForm,ProjectForm,Proposal_comment_Form
 from project.models import User, bcrypt 
 import functools
 from project import db, login_manager
@@ -39,16 +39,13 @@ class Admin(Resource):
         student = Proposal.query.filter_by(reg_no=reg_no).all()
         if student is not None:
             Proposal.json()
-            ## Make status a drop down menu
-            status = TextField('Approval',validators=[DataRequired()])
-            supervisor = TextField('Supervisor',validators=[DataRequired()])
-            email = TextField('Email',validators=[DataRequired()])
-            comment = TextField('Comment',validators=[DataRequired()])
+            form = ProposalForm(request.form)
+            
             if status == 'Approved':
-                Proposal.status = status
-                Proposal.supervisor = supervisor
-                Proposal.email = email
-                proposal.comment = comment
+                Proposal.status = request.form['status']
+                Proposal.supervisor = request.form['supervisor']
+                Proposal.email = request.form['email']
+                proposal.comment = request.form['comment']
 
                 db.session.commit()
 
@@ -84,11 +81,10 @@ class Admin(Resource):
             flash('Students proposal doesnt exist')
 
     def project():
-        title = TextField('Approval',validators=[DataRequired()])
-        comments =  = TextField('Comment',validators=[DataRequired()])
+        form = ProjectForm(request.form)
         ## formate date
         date_submit = datetime.datetime.today()
-##        report = TextField('Upload File',validators=[DataRequired()])
+        ## report = TextField('Upload File',validators=[DataRequired()])
         if request.method == 'POST':
             ## check if the post request has a file
             if 'file' not in request.files:
@@ -106,8 +102,7 @@ class Admin(Resource):
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 
                 ## return redirect(url_for('uploaded_file',filename=filename))
-
-                fln = Project(title,filename,comments,date_submit)
+                fln = Project(request.form['title'],filename,request.form['comments'],date_submit)
                 db.session.add(fln)
                 db.session.commit()
                 flash('File Uploaded')
@@ -117,7 +112,7 @@ class Admin(Resource):
         return students
 
     def proposal_comment():
-        comment = TextField('Comment on project',validators=[DataRequired()])
-        Proposal.comment = comment
+        form = Proposal_comment_Form(request.form)
+        Proposal.comment = request.form['comment']
         db.session.commit()
         

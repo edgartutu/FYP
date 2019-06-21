@@ -3,7 +3,7 @@ from project.models import User, Admin, Proposal, Department
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for
 from flask.ext.login import login_user,login_required, logout_user
-from .forms import LoginForm
+from .forms import LoginForm,Proposal_submittion_Form
 from project.models import User, bcrypt
 from project import db, login_manager
 from werkzeug.utils import secure_filename
@@ -37,11 +37,7 @@ class Users(Resource):
         return project
 
     def submit_projects():
-        title = TextField('Title',validators=[DataRequired()])
-        reg_no = TextField('Registration Number',validators=[DataRequired()])
-        problem_statment = TextField('Problem Statment',validators=[DataRequired()])
-        abstract = TextField('Abstract',validators=[DataRequired()])
-        student = TextField('Student',validators=[DataRequired()])
+        form = Proposal_submittion_Form(request.form)
         status = 'pending'
         supervisor = 'None'
         email = 'None
@@ -61,7 +57,8 @@ class Users(Resource):
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                p_upload = Proposal(title,reg_no,problem_statment,abstract,filename,student,status,supervisor,email)
+                p_upload = Proposal(request.form['title'],request.form['reg_no'],request.form['problem_statment'],
+                                    request.form['abstract'],filename,request.form['student'],status,supervisor,email)
                 db.session.add(p_upload)
                 db.session.commmit()
                 flash('File Uploaded')
