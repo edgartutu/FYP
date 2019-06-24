@@ -13,7 +13,6 @@ from flask_login import login_user,login_required,logout_user
 api = Api(app)
 
 
-
 class Login(Resource):
     @staticmethod
     @login_required
@@ -43,6 +42,7 @@ class Login(Resource):
                     error = 'Invalid email or password'
         return make_response(render_template('adminlogin.html',form=form))
 ##        return render_template('login.html',form=form,error=error)
+    
 
 class Logout(Resource):
     @staticmethod
@@ -51,6 +51,7 @@ class Logout(Resource):
         logout_user()
         flash('You were logged out. ')
 ##        return redirect(url_for(''))
+        
 
 class ResetPassword(Resource):
     def post(self):
@@ -72,11 +73,9 @@ class ApproveProject(Resource):
             return aproved
         elif Proposal.status == 'Rejected':
             reject = Rejected_Proposal.query.all()
-            return rejected
-        
+            return rejected       
 ##        return make_response(render_template('approveprojects.html',form=form))
-        
-    
+           
     def post(self):
         ##error = None
         reg_no = "16/u/10995/ps"
@@ -84,16 +83,13 @@ class ApproveProject(Resource):
         if student is not None:
 ##            Proposal.json(self)
             form = ProposalForm(request.form)
-            return student
-            
+            return student          
             if status == 'Approved':
                 Proposal.status = request.form['status']
                 Proposal.supervisor = request.form['supervisor']
                 Proposal.email = request.form['email']
                 proposal.comment = request.form['comment']
-
                 db.session.commit()
-
             elif status == 'Rejected':
                 rejected = Proposal.query.filter_by(reg_no=reg_no).first()
                 new_data = []
@@ -108,21 +104,18 @@ class ApproveProject(Resource):
                     supervisor = 'None'
                     email = 'None'
                     cmmt = comment
-
                     insert = Rejected_Proposal(title,reg_no,problem_statment,abstact,proposal_uploadfile,student,status,supervisor,email,comment)
-
                 db.session.add(insert)
                 db.session.delete(rejected)
                 db.session.commit()
                 return student
-
             else:
                 flash('Error: Not successful')
                 return student
-
         else:
             flash('Students proposal doesnt exist')
 ##        return make_response(render_template('approveproject.html',form=form))
+
             
 class PostProject(Resource):
     @staticmethod
@@ -152,7 +145,6 @@ class PostProject(Resource):
                 db.session.commit()
                 return fln.json()
 ##                flash('File Uploaded')
-
 ##        return make_response(render_template('projectadmin.html',form=form))
 
                 

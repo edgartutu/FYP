@@ -11,7 +11,6 @@ from flask_login import login_user,login_required,logout_user
 import logging
 
 
-
 class Login(Resource):
     @staticmethod
     @login_required

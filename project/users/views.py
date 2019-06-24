@@ -72,7 +72,6 @@ class Login(Resource):
 ##        return render_template('try.html',form=form,error=error)
 
 
-
 class Logout(Resource):
     @staticmethod
     @login_required
@@ -107,11 +106,8 @@ class PostProjects(Resource):
         pass
     
     def get(self,status,supervisor,email,title,reg_no, problem_statment,abstract,student_pair):
-        header = {'Content-Type':'text/html'}
-        
-    
-##        form = Proposal_submittion_Form()
-        
+        header = {'Content-Type':'text/html'}    
+##        form = Proposal_submittion_Form()   
         status = 'pending'
         supervisor = 'None'
         email = 'None'
@@ -120,16 +116,12 @@ class PostProjects(Resource):
 ##        reg_no=form.reg_no.data
 ##        problem_statment=form.problem_statment.data
 ##        abstract=form.abstract.data
-##        student=form.student.data
-        
+##        student=form.student.data    
         if request.method == 'POST':
-
             if 'file' not in request.files:
-                flash('No file')
-              
+                flash('No file')              
             file = request.files['inputfile']
-            ''' add validation'''
-            
+            ''' add validation'''            
             if file.filename == '':
                 flash('No file selected')
                 ## return redirect(request.url)
@@ -143,7 +135,6 @@ class PostProjects(Resource):
             db.session.commmit()
             return p_upload
             flash('File Uploaded')
-
 ##        return make_response(render_template('try.html',form=form))
 
                 
