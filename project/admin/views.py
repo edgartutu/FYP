@@ -1,7 +1,7 @@
 from project import app, db
-from project.models import User, Admin, Proposal, Department
+from project.models import User, Admin, Proposal, Department,Project
 from flask_restful import Resource, Api
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for,make_response
 from flask_login import login_user,login_required, logout_user
 from .forms import LoginForm,ProposalForm,ProjectForm,Proposal_comment_Form
 import functools
@@ -41,7 +41,8 @@ class Login(Resource):
 ##                    return redirect(url_for())
                 else:
                     error = 'Invalid email or password'
-        return render_template('login.html',form=form,error=error)
+        return make_response(render_template('adminlogin.html',form=form))
+##        return render_template('login.html',form=form,error=error)
 
 class Logout(Resource):
     @staticmethod
@@ -51,14 +52,39 @@ class Logout(Resource):
         flash('You were logged out. ')
 ##        return redirect(url_for(''))
 
+class ResetPassword(Resource):
+    def post(self):
+        old_pass, new_pass = request.json.get('old_pass'), request.json.get('new_pass')
+        user = Admin.query.filter_by(email=email).first()
+        if user.password != old_pass:
+            flash ('status: old password does not match.')
+        user.password = new_pass
+        db.session.commit()
+        flash('status: password changed.')
+##        return redirect(url_for())
+
+        
 class ApproveProject(Resource):
     @staticmethod
-    def proposals(reg_no):
+    def get():
+        if Proposal.status =='Approved':
+            aproved = Proposal.query.all()
+            return aproved
+        elif Proposal.status == 'Rejected':
+            reject = Rejected_Proposal.query.all()
+            return rejected
+        
+##        return make_response(render_template('approveprojects.html',form=form))
+        
+    
+    def post(self):
         ##error = None
+        reg_no = "16/u/10995/ps"
         student = Proposal.query.filter_by(reg_no=reg_no).all()
         if student is not None:
-            Proposal.json()
+##            Proposal.json(self)
             form = ProposalForm(request.form)
+            return student
             
             if status == 'Approved':
                 Proposal.status = request.form['status']
@@ -88,38 +114,46 @@ class ApproveProject(Resource):
                 db.session.add(insert)
                 db.session.delete(rejected)
                 db.session.commit()
+                return student
 
             else:
                 flash('Error: Not successful')
+                return student
 
         else:
             flash('Students proposal doesnt exist')
+##        return make_response(render_template('approveproject.html',form=form))
+            
 class PostProject(Resource):
     @staticmethod
-    def post():
-        form = ProjectForm(request.form)
+    def post(title,comments,report_uploadfile,date_submit):
+##        form = ProjectForm(request.form)
         ## formate date
-        date_submit = datetime.datetime.today()
+        date_submit = datetime.date.today()
         ## report = TextField('Upload File',validators=[DataRequired()])
-        if request.method == 'POST':
+        if request.method == 'post':
             ## check if the post request has a file
-            if 'file' not in request.files:
-                flash('No file')
-               ## return redirect(request.url)
-            file = request.files['file']
-            ## if user does not select file, browsr also
-            ## submit an empty part without filename
-            if file.filename == '':
-                flash('No file selected')
-                ## return redirect(request.url)
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))             
-                ## return redirect(url_for('uploaded_file',filename=filename))
-                fln = Project(request.form['title'],filename,request.form['comments'],date_submit)
+##            if 'file' not in request.files:
+##                flash('No file')
+##               ## return redirect(request.url)
+##            file = request.files['file']
+##            ## if user does not select file, browsr also
+##            ## submit an empty part without filename
+##            if file.filename == '':
+##                flash('No file selected')
+##                ## return redirect(request.url)
+##            if file and allowed_file(file.filename):
+##                filename = secure_filename(file.filename)
+##                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))             
+####                ## return redirect(url_for('uploaded_file',filename=filename))
+####                fln = Project(request.form['title'],file.read(),request.form['comments'],date_submit)
+                fln = Project(title=title ,comments=comments,date_submit=date_submit)
                 db.session.add(fln)
                 db.session.commit()
-                flash('File Uploaded')
+                return fln.json()
+##                flash('File Uploaded')
+
+##        return make_response(render_template('projectadmin.html',form=form))
 
                 
 class PendingProposal(Resource):
@@ -130,9 +164,10 @@ class PendingProposal(Resource):
 
     
 class ProposalComment(Resource):
-    @staticmethod
-    def proposal_comment():
-        form = Proposal_comment_Form(request.form)
-        Proposal.comment = request.form['comment']
+##    @staticmethod
+    def post(comment):
+##        form = Proposal_comment_Form(request.form)
+##        Proposal.comment = request.form['comment']
+        Proposal.comment=comment
         db.session.commit()
         

@@ -83,11 +83,11 @@ class Project(db.Model, UserMixin):
     __tablename__ = 'projects'
     title = db.Column(db.String(500),primary_key=True)
 ##    reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
-    report_uploadfile = db.Column(db.LargeBinary)
+##    report_uploadfile = db.Column(db.LargeBinary)
     comments = db.Column(db.String(500))
     date_submit = db.Column(db.DateTime)
 
-    def __init__(self, title, report_uploadfile, student_regno, comments,
+    def __init__(self, title,comments,
                  date_submit):
         self.title = title
 ##        self.student_regno = student_regno
@@ -95,9 +95,9 @@ class Project(db.Model, UserMixin):
         self.comments = comments
         self.date_submit = date_submit
 
-    def __repr__(self):
-        return '{} /n {} /n {} /n {} /n {}'.format(self.title, self.report_uploadfile, self.comments,
-                                                   self.date_submit)
+    def json(self):
+        return {'title':self.title, 'comments':self.comments,
+                                                  'date_submit': self.date_submit}
 
 
 class Proposal(db.Model, UserMixin):
@@ -106,29 +106,29 @@ class Proposal(db.Model, UserMixin):
     problem_statement = db.Column(db.String(1000))
     abstract = db.Column(db.String(1000))
     proposal_uploadfile = db.Column(db.LargeBinary)
-    student = db.Column(db.String(500))
+    student_pair = db.Column(db.String(500))
     status = db.Column(db.String(50))
     supervisor = db.Column(db.String(120))
     email = db.Column(db.String(500))
     comment = db.Column(db.String(500))
     ## status of the project  
 
-    def __init__(self, problem_statement, abstract, proposal_uploadfile, student, student_no,title,status,supervisor,email,comment):
+    def __init__(self, problem_statement, abstract, proposal_uploadfile, student_pair, student_no,title,status,supervisor,email,comment):
         self.title = title
         self.problem_statement = problem_statement
         self.abstract = abstract
         self.proposal_uploadfile = proposal_uploadfile
-        self.student = student
+        self.student_pair = student_pair
         self.student_no = student_no
         self.status = status
         self.supervisor = supervisor
         self.email = email
         self.comment = comment
 
-    def json():
+    def json(self):
         return {'title':self.title,'problem_statement':self.problem_statement, 'abstract':self.abstract,
                 'proposal_uploadfile':self.proposal_uploadfile,
-                'student':self.student, 'student_no':self.student_no}
+                'student':self.student_pair, 'student_no':self.student_no}
 
 class Rejected_Proposal(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, unique=True, index=True)
@@ -155,7 +155,7 @@ class Rejected_Proposal(db.Model, UserMixin):
         self.email = email
         self.comment = comment
 
-    def json():
+    def json(self):
         return {'title':self.title,'problem_statement':self.problem_statement, 'abstract':self.abstract,
                 'proposal_uploadfile':self.proposal_uploadfile,
                 'student':self.student, 'student_no':self.student_no}

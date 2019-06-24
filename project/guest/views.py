@@ -8,6 +8,7 @@ from project.models import User
 from project import db, login_manager
 import functools
 from flask_login import login_user,login_required,logout_user
+import logging
 
 
 
@@ -49,13 +50,28 @@ class Logout(Resource):
         flash('You were logged out. ')
 ##        return redirect(url_for(''))
 
-        
+class PostProject(Resource):
+    @staticmethod
+    def post(title,comments,report_uploadfile,date_submit):
+##        form = ProjectForm(request.form)
+        ## formate date
+        date_submit = datetime.date.today()
+        ## report = TextField('Upload File',validators=[DataRequired()])
+        if request.method == 'post':
+               ## return redirect(request.url)
+                fln = Project(title=title ,comments=comments,date_submit=date_submit)
+                db.session.add(fln)
+                db.session.commit()
+                return fln.json()
+##                flash('File Uploaded')
+
+
 class AssignedProposal(Resource):
     @staticmethod
     
-    def assigned_proposal(email):
-        project = Proposal.query.filter_by(email=email).all()
-        ## will i need to iterate through the recode project like the for loop
+    def get():
+        project = Proposal.query.all()
+        ## will need to iterate through the recode project like the for loop
         return project
 
         
