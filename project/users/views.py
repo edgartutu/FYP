@@ -19,8 +19,7 @@ api = Api(app)
 class Register(Resource):
     @staticmethod
     
-    def post(email,reg_no,password,confirm_password):
-        
+    def post(email,reg_no,password,confirm_password):    
         form = RegisterForm()
         try:
             reg_no,email, password = request.json.get('reg_no').strip(), request.json.get('email').strip(),request.json.get('password').strip()
@@ -30,7 +29,7 @@ class Register(Resource):
             flash('status:invalid input')
         if reg_no is None or password is None :
             flash ('status:field non')
-        if password==confirm_password:   
+        if password == confirm_password:   
             if form.validate_on_submit():
                 user = User(email=form.email.data,reg_no=form.reg_no.data,password=form.password.data)
                 if user is not None:

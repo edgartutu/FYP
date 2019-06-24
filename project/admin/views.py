@@ -126,7 +126,7 @@ class ApproveProject(Resource):
             
 class PostProject(Resource):
     @staticmethod
-    def post(title,comments,report_uploadfile,date_submit):
+    def post(title,comments,date_submit):
 ##        form = ProjectForm(request.form)
         ## formate date
         date_submit = datetime.date.today()

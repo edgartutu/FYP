@@ -11,7 +11,7 @@ from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingP
 api = Api(app)
 
 
-api.add_resource(Register, '/register/<string:email>/<string:reg_no>/<string:password>')
+api.add_resource(Register, '/register/<string:email>/<string:reg_no>/<string:password>/<string:confirm_password>')
 api.add_resource(Login, '/login-user')
 api.add_resource(Logout, '/logout')
 ##api.add_resource(ResetPassword, '/reset-password')
@@ -20,7 +20,7 @@ api.add_resource(PostProjects, '/postprojects')
 api.add_resource(ViewPrjects, '/viewprojects')
 ##
 ##api.add_resource(Login, '/login-admin')
-##api.add_resource(Logout, '/logout-user')
+##api.add_resource(Logout, '/logout-admin')
 api.add_resource(ApproveProject, '/approve')
 ##api.add_resource(PostProject, '/postproject')
 api.add_resource(PostProject, '/postproject/<string:title>/<string:comments>/<string:date_submit>')
