@@ -34,7 +34,8 @@ def load_user(user_id):
 
 class Admin(db.Model, UserMixin):
     email = db.Column(db.String(64), primary_key=True, unique=True, index=True)
-    password_hash = db.Column(db.String(128))
+    publicID = db.Column(db.String(100))
+    password = db.Column(db.String(128))
 
     def __init__(self, email, password):
         self.email = email
@@ -50,6 +51,7 @@ def load_user(user_id):
 
 class Guest(db.Model, UserMixin):
     email = db.Column(db.String(64), primary_key=True, unique=True, index=True)
+    publicID = db.Column(db.String(100))
     password_hash = db.Column(db.String(128))
 
     def __init__(self, email, password):
@@ -67,6 +69,7 @@ def load_user(user_id):
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
+    publicID = db.Column(db.String(100))
     email=db.Column(db.String(30))
     password_hash = db.Column(db.String(128))
 

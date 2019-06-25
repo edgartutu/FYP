@@ -13,13 +13,43 @@ import functools
 from flask_login import login_user,login_required,logout_user
 import json
 import logging
+
+from flask import jsonify
+import uuid
+from werkzeug.security import generate_password_hash,check_password_hash
+import jwt
+from functools import wraps
+import datetime
+
 api = Api(app)
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args,**kwargs):
+        token = None
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+
+        if not token:
+            return jsonify({'message':'Token is missing'}),401
+
+        try:
+            data = jwt.decode(token,app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(publicID=data['publicID']).first()
+
+        except:
+            return jsonify({'message':'Token is invalid'}),401
+
+        return f(curent_user,*args,**kwargs)
+    
+    return decorated
 
 class Register(Resource):
     @staticmethod
-    
-    def post(email,reg_no,password,confirm_password):    
+    def post(email,reg_no,password,confirm_password):
+        '''Generating public ID'''
+        publicID = str(uuid.uuid4())
+        
         form = RegisterForm()
         try:
             reg_no,email, password = request.json.get('reg_no').strip(), request.json.get('email').strip(),request.json.get('password').strip()
@@ -29,9 +59,9 @@ class Register(Resource):
             flash('status:invalid input')
         if reg_no is None or password is None :
             flash ('status:field non')
-        if password == confirm_password:   
+        if password==confirm_password:   
             if form.validate_on_submit():
-                user = User(email=form.email.data,reg_no=form.reg_no.data,password=form.password.data)
+                user = User(email=form.email.data,reg_no=form.reg_no.data,publicID=publicID,password=form.password.data)
                 if user is not None:
                     flash ('status:user exist')
                 # Create a new user.
@@ -43,39 +73,58 @@ class Register(Resource):
     ##            return redirect(url_for())
 
 
-class Login(Resource):
-##    @staticmethod
-##    @login_required
-    def post(reg_no,password):
-        error=None
-        form = LoginForm()
-        try:
-            reg_no, password = request.json.get('reg_no').strip(), request.json.get('password').strip()
-            print(reg_no , password)
-        except Exception as why:
-            logging.info("reg_no or password is wrong. " + str(why))
-            flash ('status: invalid input.')
-        if reg_no is None or password is None:
-            flash ('status: user information is none.') 
+##class Login(Resource):
+####    @staticmethod
+####    @login_required
+##    def post(reg_no,password):
+##        error=None
+##        form = LoginForm()
+##        try:
+##            reg_no, password = request.json.get('reg_no').strip(), request.json.get('password').strip()
+##            print(reg_no , password)
+##        except Exception as why:
+##            logging.info("reg_no or password is wrong. " + str(why))
+##            flash ('status: invalid input.')
+##        if reg_no is None or password is None:
+##            flash ('status: user information is none.') 
+##        
+##        if request.method =='POST':
+##            if form.validate_on_submit():
+##                user = User.query.filter_by(reg_no=form.reg_no.data).first()
+##                if user is None:
+##                    flash ('status: user doesnt exist.')
+##                elif user is not None and user.check_password(form.password.data):
+##                    login_user(user)
+##                    flash('You were logged in.')
+####                    return redirect(url_for())
+##                else:
+##                    error = 'Invalid registration number or password'
+####        return render_template('try.html',form=form,error=error)
+
+class Login1(Resource):
+    def get(self):
+        auth = request.authorization
+        '''checking if authorization information is complete'''
+        if not auth or not auth.username or not auth.password:
+            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})
         
-        if request.method =='POST':
-            if form.validate_on_submit():
-                user = User.query.filter_by(reg_no=form.reg_no.data).first()
-                if user is None:
-                    flash ('status: user doesnt exist.')
-                elif user is not None and user.check_password(form.password.data):
-                    login_user(user)
-                    flash('You were logged in.')
-##                    return redirect(url_for())
-                else:
-                    error = 'Invalid registration number or password'
-##        return render_template('try.html',form=form,error=error)
+        admin = User.query.filter_by(reg_no=auth.username).first()
+
+        if not admin:
+            return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})
+        
+##        if check_password_hash(admin.password,auth.password):
+        if admin.password_hash == auth.password:
+            token = jwt.encode({'public_id':admin.publicID,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
+            return jsonify({'token':token.decode('UTF-8')})
+        return make_response('Could not verify3',401,{'www-Authenticate':'Basic realm-"login required!"'})
 
 
 class Logout(Resource):
+    @token_required
     @staticmethod
     @login_required
-    def post():
+    def post(current_user):
         logout_user()
         flash('You were logged out.')
 ##        return redirect(url_for(''))
@@ -95,19 +144,18 @@ class ResetPassword(Resource):
         
         
 class GetAllProjects(Resource):
-    
-    def get(self):
+    @token_required
+    def get(self,current_user):
         project = Project.query.all()
         return project
 
 
 class PostProjects(Resource):
-    def __init__(self):
-        pass
-    
-    def get(self,status,supervisor,email,title,reg_no, problem_statment,abstract,student_pair):
-        header = {'Content-Type':'text/html'}    
-##        form = Proposal_submittion_Form()   
+    @token_required
+    @staticmethod
+    def post(current_user,title,reg_no, problem_statment,abstract,student_pair):
+        header = {'Content-Type':'text/html'}
+##        form = Proposal_submittion_Form()
         status = 'pending'
         supervisor = 'None'
         email = 'None'
@@ -116,12 +164,16 @@ class PostProjects(Resource):
 ##        reg_no=form.reg_no.data
 ##        problem_statment=form.problem_statment.data
 ##        abstract=form.abstract.data
-##        student=form.student.data    
+##        student=form.student.data
+        
         if request.method == 'POST':
+
             if 'file' not in request.files:
-                flash('No file')              
+                flash('No file')
+              
             file = request.files['inputfile']
-            ''' add validation'''            
+            ''' add validation'''
+            
             if file.filename == '':
                 flash('No file selected')
                 ## return redirect(request.url)
@@ -135,12 +187,13 @@ class PostProjects(Resource):
             db.session.commmit()
             return p_upload
             flash('File Uploaded')
+
 ##        return make_response(render_template('try.html',form=form))
 
-                
 class ViewPrjects(Resource):
-    
-    def get(reg_no):
+    @token_required
+    @staticmethod
+    def get(current_user,reg_no):
         error = None
         project = Proposal.query.filter_by(reg_no=str(reg_no)).first()
         rejected = Rejected_Proposal.query.filter_by(reg_no=str(reg_no)).all()

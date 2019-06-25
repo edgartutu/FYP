@@ -10,48 +10,93 @@ from werkzeug.utils import secure_filename
 import os
 import datetime
 from flask_login import login_user,login_required,logout_user
+
+from flask import jsonify
+import uuid
+from werkzeug.security import generate_password_hash,check_password_hash
+import jwt
+from functools import wraps
+
 api = Api(app)
 
-
-class Login(Resource):
-    @staticmethod
-    @login_required
-    def post():
-        error=None
-        form = LoginForm(request.form)
-        try:
-            email, password = request.json.get('email').strip(), request.json.get('password').strip()
-            print(email , password)
-        except Exception as why:
-            logging.info("reg_no or password is wrong. " + str(why))
-            flash ('status: invalid input.')
-        if email is None or password is None:
-            flash ('status: user information is none.') 
-        
-        if request.method =='POST':
-            if form.validate_on_submit():
-                admin = Admin.query.filter_by(email=email, password=password).first()
-                if admin is None:
-                    flash ('status: user doesnt exist.')
-                elif admin is not None and check_password_hash(
-                    user.password, request.form['password']):
-                    login_user(admin)
-                    flash('You were logged in.')
-##                    return redirect(url_for())
-                else:
-                    error = 'Invalid email or password'
-        return make_response(render_template('adminlogin.html',form=form))
+##class Login(Resource):
+##    @staticmethod
+##    @login_required
+##    def post():
+##        error=None
+##        form = LoginForm(request.form)
+##        try:
+##            email, password = request.json.get('email').strip(), request.json.get('password').strip()
+##            print(email , password)
+##        except Exception as why:
+##            logging.info("reg_no or password is wrong. " + str(why))
+##            flash ('status: invalid input.')
+##        if email is None or password is None:
+##            flash ('status: user information is none.') 
+##        
+##        if request.method =='POST':
+##            if form.validate_on_submit():
+##                admin = Admin.query.filter_by(email=email, password=password).first()
+##                if admin is None:
+##                    flash ('status: user doesnt exist.')
+##                elif admin is not None and check_password_hash(
+##                    user.password, request.form['password']):
+##                    login_user(admin)
+##                    flash('You were logged in.')
+####                    return redirect(url_for())
+##                else:
+##                    error = 'Invalid email or password'
+##        return make_response(render_template('adminlogin.html',form=form))
 ##        return render_template('login.html',form=form,error=error)
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args,**kwargs):
+        token = None
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+
+        if not token:
+            return jsonify({'message':'Token is missing'}),401
+
+        try:
+            data = jwt.decode(token,app.config['SECRET_KEY'])
+            current_user = Admin.query.filter_by(publicID=data['publicID']).first()
+
+        except:
+            return jsonify({'message':'Token is invalid'}),401
+
+        return f(curent_user,*args,**kwargs)
     
+    return decorated
+    
+class Login(Resource):
+    def get(self):
+        auth = request.authorization
+        '''checking if authorization information is complete'''
+        if not auth or not auth.username or not auth.password:
+            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})
+        
+        admin = Admin.query.filter_by(email=auth.username).first()
+
+        if not admin:
+            return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})
+        
+##        if check_password_hash(admin.password,auth.password):
+        if admin.password == auth.password:
+            token = jwt.encode({'public_id':admin.publicID,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
+            return jsonify({'token':token.decode('UTF-8')})
+        return make_response('Could not verify3',401,{'www-Authenticate':'Basic realm-"login required!"'})
 
 class Logout(Resource):
+    @token_required
     @staticmethod
     @login_required
-    def post():
+    def post(current_user):
         logout_user()
         flash('You were logged out. ')
 ##        return redirect(url_for(''))
-        
 
 class ResetPassword(Resource):
     def post(self):
@@ -64,32 +109,27 @@ class ResetPassword(Resource):
         flash('status: password changed.')
 ##        return redirect(url_for())
 
-        
+       
 class ApproveProject(Resource):
-    @staticmethod
-    def get():
-        if Proposal.status =='Approved':
-            aproved = Proposal.query.all()
-            return aproved
-        elif Proposal.status == 'Rejected':
-            reject = Rejected_Proposal.query.all()
-            return rejected       
-##        return make_response(render_template('approveprojects.html',form=form))
-           
-    def post(self):
+    @token_required
+    @staticmethod  
+    def post(self,current_user,reg_no):
         ##error = None
-        reg_no = "16/u/10995/ps"
+##        reg_no = "16/u/10995/ps"
         student = Proposal.query.filter_by(reg_no=reg_no).all()
         if student is not None:
 ##            Proposal.json(self)
             form = ProposalForm(request.form)
-            return student          
+            return student
+            
             if status == 'Approved':
                 Proposal.status = request.form['status']
                 Proposal.supervisor = request.form['supervisor']
                 Proposal.email = request.form['email']
                 proposal.comment = request.form['comment']
+
                 db.session.commit()
+
             elif status == 'Rejected':
                 rejected = Proposal.query.filter_by(reg_no=reg_no).first()
                 new_data = []
@@ -104,60 +144,51 @@ class ApproveProject(Resource):
                     supervisor = 'None'
                     email = 'None'
                     cmmt = comment
+
                     insert = Rejected_Proposal(title,reg_no,problem_statment,abstact,proposal_uploadfile,student,status,supervisor,email,comment)
+
                 db.session.add(insert)
                 db.session.delete(rejected)
                 db.session.commit()
                 return student
+
             else:
                 flash('Error: Not successful')
                 return student
+
         else:
             flash('Students proposal doesnt exist')
 ##        return make_response(render_template('approveproject.html',form=form))
-
             
 class PostProject(Resource):
+    @token_required
     @staticmethod
-    def post(title,comments,date_submit):
+    def post(current_user,title,comments):
 ##        form = ProjectForm(request.form)
         ## formate date
         date_submit = datetime.date.today()
         ## report = TextField('Upload File',validators=[DataRequired()])
         if request.method == 'post':
-            ## check if the post request has a file
-##            if 'file' not in request.files:
-##                flash('No file')
-##               ## return redirect(request.url)
-##            file = request.files['file']
-##            ## if user does not select file, browsr also
-##            ## submit an empty part without filename
-##            if file.filename == '':
-##                flash('No file selected')
-##                ## return redirect(request.url)
-##            if file and allowed_file(file.filename):
-##                filename = secure_filename(file.filename)
-##                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))             
-####                ## return redirect(url_for('uploaded_file',filename=filename))
-####                fln = Project(request.form['title'],file.read(),request.form['comments'],date_submit)
-                fln = Project(title=title ,comments=comments,date_submit=date_submit)
-                db.session.add(fln)
-                db.session.commit()
-                return fln.json()
-##                flash('File Uploaded')
+            fln = Project(title=title ,comments=comments,date_submit=date_submit)
+            db.session.add(fln)
+            db.session.commit()
+            return fln.json()
+##          flash('File Uploaded')
 ##        return make_response(render_template('projectadmin.html',form=form))
 
                 
 class PendingProposal(Resource):
+    @token_required
     @staticmethod
-    def get():
+    def get(current_user):
         students = Proposal.query.filter_by(status='pending').all()
         return students
 
     
 class ProposalComment(Resource):
-##    @staticmethod
-    def post(comment):
+    @token_required
+    @staticmethod
+    def post(current_user,comment):
 ##        form = Proposal_comment_Form(request.form)
 ##        Proposal.comment = request.form['comment']
         Proposal.comment=comment
