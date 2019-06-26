@@ -53,8 +53,16 @@ class TestUsers(BaseTestCase):
     def test_post_admin_objects(self):
         '''get  data'''
         student={'name':'mutawe','school':'school','program':'program'}
-        r = self.client.post('http://localhost:5000/postproject/<string:title>/<string:file>/<string:comments>/<string:date_submit>',data=json.dumps(student))
+        r = self.client.post('http://localhost:5000/postproject/<string:title>/<string:comments>/<string:date_submit>',data=json.dumps(student))
         self.assertEqual(r.status_code, 200)
+
+    def test_regester_user_objects(self):
+        '''get  data'''
+        student={'name':'mutawe','school':'school','program':'program'}
+        r = self.client.post('http://localhost:5000/register/<string:email>/<string:reg_no>/<string:password>/<string:confirm_password>',data=json.dumps(student))
+        self.assertEqual(r.status_code, 200)
+            
+
             
 
 ##    def test_post_department_creation(self):

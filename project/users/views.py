@@ -13,7 +13,6 @@ import functools
 from flask_login import login_user,login_required,logout_user
 import json
 import logging
-
 from flask import jsonify
 import uuid
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -29,20 +28,16 @@ def token_required(f):
         token = None
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
-
         if not token:
             return jsonify({'message':'Token is missing'}),401
-
         try:
             data = jwt.decode(token,app.config['SECRET_KEY'])
             current_user = User.query.filter_by(publicID=data['publicID']).first()
-
         except:
             return jsonify({'message':'Token is invalid'}),401
-
-        return f(curent_user,*args,**kwargs)
-    
+        return f(curent_user,*args,**kwargs)   
     return decorated
+
 
 class Register(Resource):
     @staticmethod
@@ -106,13 +101,10 @@ class Login1(Resource):
         auth = request.authorization
         '''checking if authorization information is complete'''
         if not auth or not auth.username or not auth.password:
-            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})
-        
+            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})        
         admin = User.query.filter_by(reg_no=auth.username).first()
-
         if not admin:
-            return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})
-        
+            return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})       
 ##        if check_password_hash(admin.password,auth.password):
         if admin.password_hash == auth.password:
             token = jwt.encode({'public_id':admin.publicID,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
@@ -143,65 +135,65 @@ class ResetPassword(Resource):
 ##        return redirect(url_for())
         
         
+        
 class GetAllProjects(Resource):
-    @token_required
-    def get(self,current_user):
+##    @token_required
+    def get(self):
         project = Project.query.all()
-        return project
+        return [x.json() for x in project]
 
 
-class PostProjects(Resource):
+class PostProposals(Resource):
     @token_required
     @staticmethod
-    def post(current_user,title,reg_no, problem_statment,abstract,student_pair):
-        header = {'Content-Type':'text/html'}
-##        form = Proposal_submittion_Form()
+    def post(self,title, problem_statment,abstract,student_pair):
+        header = {'Content-Type':'text/html'}    
+##        form = Proposal_submittion_Form()   
         status = 'pending'
         supervisor = 'None'
         email = 'None'
         comment = 'None'
+        x = 'rereretereftettrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
+        y = x.encode('ascii')
 ##        title=form.title.data
 ##        reg_no=form.reg_no.data
 ##        problem_statment=form.problem_statment.data
 ##        abstract=form.abstract.data
-##        student=form.student.data
-        
-        if request.method == 'POST':
-
-            if 'file' not in request.files:
-                flash('No file')
-              
-            file = request.files['inputfile']
-            ''' add validation'''
-            
-            if file.filename == '':
-                flash('No file selected')
-                ## return redirect(request.url)
-            elif file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                return filename
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            p_upload = Proposal(title=title,reg_no=reg_no,problem_statment=problem_statment,abstract=abstract,proposal_uploadfile=file.read(),
-                                student_pair=student_pair,status=status,supervisor=supervisor,email=email,comment=comment)
-            db.session.add(p_upload)
-            db.session.commmit()
-            return p_upload
-            flash('File Uploaded')
-
+##        student=form.student.data    
+##        if request.method == 'POST':
+##            if 'file' not in request.files:
+##                flash('No file')              
+##            file = request.files['inputfile']
+##            ''' add validation'''            
+##            if file.filename == '':
+##                flash('No file selected')
+##                ## return redirect(request.url)
+##            elif file and allowed_file(file.filename):
+##                filename = secure_filename(file.filename)
+##                return filename
+######            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        p_upload = Proposal(title=title,problem_statment=problem_statment,abstract=abstract,proposal_uploadfile=y ,student_pair=student_pair,status=status,supervisor=supervisor,email=email,comment=comment)
+        db.session.add(p_upload)
+        db.session.commmit()
+        return p_upload.json()
+##            flash('File Uploaded')
 ##        return make_response(render_template('try.html',form=form))
 
+                
 class ViewPrjects(Resource):
     @token_required
     @staticmethod
-    def get(current_user,reg_no):
+    def get(reg_no):
         error = None
         project = Proposal.query.filter_by(reg_no=str(reg_no)).first()
         rejected = Rejected_Proposal.query.filter_by(reg_no=str(reg_no)).all()
-        if project and rejected == None:
-            flash("Proposal Not submitted")
-        else:
-            ## Checkout if this works
-            return project
+        for x in project:
+            return x.json()  
+        for y in rejected:
+            return y.json()
+                
+                
+        
         
 
 

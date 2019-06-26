@@ -37,6 +37,7 @@ class Admin(db.Model, UserMixin):
     publicID = db.Column(db.String(100))
     password = db.Column(db.String(128))
 
+
     def __init__(self, email, password):
         self.email = email
         self.password_hash = generate_password_hash(password)
@@ -88,13 +89,12 @@ class Project(db.Model, UserMixin):
 ##    reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
 ##    report_uploadfile = db.Column(db.LargeBinary)
     comments = db.Column(db.String(500))
-    date_submit = db.Column(db.DateTime)
+    date_submit = db.Column(db.String(50))
 
     def __init__(self, title,comments,
                  date_submit):
         self.title = title
 ##        self.student_regno = student_regno
-        self.report_uploadfile = report_uploadfile
         self.comments = comments
         self.date_submit = date_submit
 

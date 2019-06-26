@@ -1,15 +1,16 @@
 from project import app, db
-from project.models import User, Admin, Proposal, Department
+from project.models import User, Admin, Proposal, Department,Project
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import login_user,login_required, logout_user
 from .forms import LoginForm
-from project.models import User,Guest
+from project.models import User
 from project import db, login_manager
 import functools
 from flask_login import login_user,login_required,logout_user
 import logging
-
+import datetime,json
+from json import dumps
 from flask import jsonify
 import uuid
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -97,28 +98,35 @@ class Logout(Resource):
         flash('You were logged out. ')
 ##        return redirect(url_for(''))
 
-class PostProject(Resource):
-    @token_required
+class PostProject_(Resource):
+##    @token_required
     @staticmethod
-    def post(current_user,title,comments,report_uploadfile,date_submit):
+    def post(title,comments):
 ##        form = ProjectForm(request.form)
         ## formate date
-        date_submit = datetime.date.today()
+##        date_submit = datetime.date.today()
         ## report = TextField('Upload File',validators=[DataRequired()])
-        if request.method == 'post':
+##        if request.method == 'post':
                ## return redirect(request.url)
-                fln = Project(title=title ,comments=comments,date_submit=date_submit)
-                db.session.add(fln)
-                db.session.commit()
-                return fln.json()
+        p=datetime.date.today()
+        fln = Project(title=title ,comments=comments,date_submit=p)
+        db.session.add(fln)
+        db.session.commit()
+        return fln.json()
 ##                flash('File Uploaded')
 
 
 class AssignedProposal(Resource):
     @token_required
-    @staticmethod
-    def get(current_user):
+    @staticmethod  
+    def get():
         project = Proposal.query.all()
         ## will need to iterate through the recode project like the for loop
-        return project
-    
+        return [x.json() for x in project]
+
+        
+
+
+        
+
+        
