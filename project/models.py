@@ -109,7 +109,7 @@ class Proposal(db.Model, UserMixin):
     title=db.Column(db.String(100))
     problem_statement = db.Column(db.String(1000))
     abstract = db.Column(db.String(1000))
-    proposal_uploadfile = db.Column(db.LargeBinary)
+    proposal_uploadfile = db.Column(db.String(1000))
     student_pair = db.Column(db.String(500))
     status = db.Column(db.String(50))
     supervisor = db.Column(db.String(120))

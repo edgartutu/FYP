@@ -134,8 +134,7 @@ class ResetPassword(Resource):
         flash('status: password changed.')
 ##        return redirect(url_for())
         
-        
-        
+                
 class GetAllProjects(Resource):
 ##    @token_required
     def get(self):
@@ -147,7 +146,7 @@ class PostProposals(Resource):
 ##    @token_required
     @staticmethod
         
-    def post(reg_no,title, problem_statement,abstract,student_pair,proposal_uploadfile):
+    def post(title,reg_no, problem_statement,abstract,student_pair,proposal_uploadfile):
 ##        header = {'Content-Type':'text/html'}    
 ##        form = Proposal_submittion_Form()   
         status = 'pending'
@@ -156,7 +155,7 @@ class PostProposals(Resource):
         comment = 'None'
         
         x = 'rereretereftettrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
-        y = x.encode('utf-8')
+##        y = x.encode('utf-8')
 ##        title=form.title.data
 ##        reg_no=form.reg_no.data
 ##        problem_statment=form.problem_statment.data
@@ -174,7 +173,9 @@ class PostProposals(Resource):
 ##                filename = secure_filename(file.filename)
 ##                return filename
 ######            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        p_upload = Proposal(reg_no=reg_no,title=title,problem_statement=problem_statement,abstract=abstract,proposal_uploadfile=y ,student_pair=student_pair,status=status,supervisor=supervisor,email=email,comment=comment)
+        p_upload = Proposal(title=title,reg_no=reg_no,problem_statement=problem_statement,
+                            abstract=abstract,proposal_uploadfile=x ,student_pair=student_pair,
+                            status=status,supervisor=supervisor,email=email,comment=comment)
 ####        p_upload.title=title
 ####        p_upload.problem_statement
         db.session.add(p_upload)
@@ -207,16 +208,15 @@ class ViewPrjects(Resource):
         error = None
         project = Proposal.query.filter_by(reg_no=str(reg_no)).first()
         rejected = Rejected_Proposal.query.filter_by(reg_no=str(reg_no)).all()
-        for x in project:
-            return x.json()  
         for y in rejected:
             return y.json()
+                
                         
 class ViewProposals(Resource):
-    @token_required
+##    @token_required
     @staticmethod
-    def get(reg_no):
-        prop = Proposal.query.filter_by(reg_no=str(reg_no)).first()
+    def get():
+        prop = Proposal.query.all()
         for x in prop:
             return x.json()  
         
