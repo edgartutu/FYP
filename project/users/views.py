@@ -144,17 +144,19 @@ class GetAllProjects(Resource):
 
 
 class PostProposals(Resource):
-    @token_required
+##    @token_required
     @staticmethod
-    def post(self,title, problem_statment,abstract,student_pair):
-        header = {'Content-Type':'text/html'}    
+        
+    def post(reg_no,title, problem_statement,abstract,student_pair,proposal_uploadfile):
+##        header = {'Content-Type':'text/html'}    
 ##        form = Proposal_submittion_Form()   
         status = 'pending'
         supervisor = 'None'
         email = 'None'
         comment = 'None'
+        
         x = 'rereretereftettrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
-        y = x.encode('ascii')
+        y = x.encode('utf-8')
 ##        title=form.title.data
 ##        reg_no=form.reg_no.data
 ##        problem_statment=form.problem_statment.data
@@ -172,14 +174,32 @@ class PostProposals(Resource):
 ##                filename = secure_filename(file.filename)
 ##                return filename
 ######            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        p_upload = Proposal(title=title,problem_statment=problem_statment,abstract=abstract,proposal_uploadfile=y ,student_pair=student_pair,status=status,supervisor=supervisor,email=email,comment=comment)
+        p_upload = Proposal(reg_no=reg_no,title=title,problem_statement=problem_statement,abstract=abstract,proposal_uploadfile=y ,student_pair=student_pair,status=status,supervisor=supervisor,email=email,comment=comment)
+####        p_upload.title=title
+####        p_upload.problem_statement
         db.session.add(p_upload)
-        db.session.commmit()
+        db.session.commit()
         return p_upload.json()
 ##            flash('File Uploaded')
 ##        return make_response(render_template('try.html',form=form))
+    
+    def delete(self,title):
+        prop=Proposal.query.filter_by(title=title).first()
+        db.session.delete(prop)
+        db.session.commit()
+        return {'status':'succces'}
 
-                
+    def put(self,title):
+        prop=Proposal.query.filter_by(title=title).first()
+        prop.title=request.json.get('title',prop.title)
+        prop.problem_statment=request.json.get('problem_statment',prop.problem_statment)
+        prop.abstract=request.json.get('abstract',prop.abstract)
+        prop.proposal_uploadfile=request.json.get('proposal_uploadfile',prop.proposal_uploadfile)
+        prop.student_pair=request.json.get('student_pair',prop.student_pair)
+        db.session.commit()
+        return jsonify({'pro':prop})
+        
+                        
 class ViewPrjects(Resource):
     @token_required
     @staticmethod
@@ -191,7 +211,15 @@ class ViewPrjects(Resource):
             return x.json()  
         for y in rejected:
             return y.json()
-                
+                        
+class ViewProposals(Resource):
+    @token_required
+    @staticmethod
+    def get(reg_no):
+        prop = Proposal.query.filter_by(reg_no=str(reg_no)).first()
+        for x in prop:
+            return x.json()  
+        
                 
         
         
