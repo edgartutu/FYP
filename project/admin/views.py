@@ -56,19 +56,14 @@ def token_required(f):
         token = None
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
-
         if not token:
             return jsonify({'message':'Token is missing'}),401
-
         try:
             data = jwt.decode(token,app.config['SECRET_KEY'])
             current_user = Admin.query.filter_by(publicID=data['publicID']).first()
-
         except:
             return jsonify({'message':'Token is invalid'}),401
-
         return f(curent_user,*args,**kwargs)
-    
     return decorated
     
 class Login(Resource):
@@ -76,13 +71,10 @@ class Login(Resource):
         auth = request.authorization
         '''checking if authorization information is complete'''
         if not auth or not auth.username or not auth.password:
-            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})
-        
+            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})        
         admin = Admin.query.filter_by(email=auth.username).first()
-
         if not admin:
-            return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})
-        
+            return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})       
 ##        if check_password_hash(admin.password,auth.password):
         if admin.password == auth.password:
             token = jwt.encode({'public_id':admin.publicID,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
