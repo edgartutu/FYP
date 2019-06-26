@@ -178,7 +178,20 @@ class PostProject(Resource):
         db.session.add(fln)
         db.session.commit()
         return fln.json()
-##                flash('File Uploaded')
+
+    def delete(self,title):
+        proj=Project.query.filter_by(title=title).first()
+        db.session.delete(proj)
+        db.session.commit()
+        return {'status':'succces'}
+
+    def put(self,title):
+        proj=Project.query.filter_by(title=title).first()
+        proj.title=request.json.get('title',proj.title)
+        proj.comments=request.json.get('comments',proj.comments)
+        db.session.commit()
+        return jsonify({'proj':proj})
+        
 
 
                 
