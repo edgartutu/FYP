@@ -81,7 +81,7 @@ class Login2(Resource):
         return make_response('Could not verify3',401,{'www-Authenticate':'Basic realm-"login required!"'})
 
     
-class Logout(Resource):
+class Logout2(Resource):
     @token_required
     @staticmethod
     @login_required
