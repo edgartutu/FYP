@@ -27,13 +27,13 @@ def token_required(f):
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
         if not token:
-            return jsonify({'message':'Token is missing'}),401
+            return make_response('Invalid Token',401,{'www-Authenticate':'Invalid Token"'})
         try:
             data = jwt.decode(token,app.config['SECRET_KEY'])
-            current_user = Guest.query.filter_by(publicID=data['publicID']).first()
+            current_user = Guest.query.filter_by(publicID=data['public_id']).first()
         except:
-            return jsonify({'message':'Token is invalid'}),401
-        return f(curent_user,*args,**kwargs)   
+            return make_response('Invalid Token',401,{'www-Authenticate':'Invalid Token"'})
+        return f(current_user,*args,**kwargs)   
     return decorated
 
 ##class Login(Resource):
@@ -83,17 +83,18 @@ class Login2(Resource):
     
 class Logout2(Resource):
     @token_required
-    @staticmethod
+##    @staticmethod
     @login_required
-    def post(current_user):
+    def post(self,current_user):
         logout_user()
         flash('You were logged out. ')
 ##        return redirect(url_for(''))
 
 class PostProject_(Resource):
-##    @token_required
-    @staticmethod
-    def post(title,comments):
+    @token_required
+##    @staticmethod
+    def post(self,current_user):
+        data = request.get_json()
 ##        form = ProjectForm(request.form)
         ## formate date
 ##        date_submit = datetime.date.today()
@@ -101,19 +102,23 @@ class PostProject_(Resource):
 ##        if request.method == 'post':
                ## return redirect(request.url)
         p=datetime.date.today()
-        fln = Project(title=title ,comments=comments,date_submit=p)
+        fln = Project(title=data['title'] ,comments=data['comments'],date_submit=p)
         db.session.add(fln)
         db.session.commit()
         return fln.json()
 
-    def delete(self,title):
-        proj=Project.query.filter_by(title=title).first()
+    @token_required
+    def delete(self,current_user):
+        data = request.get_json()
+        proj=Project.query.filter_by(title=data['title']).first()
         db.session.delete(proj)
         db.session.commit()
         return {'status':'succces'}
 
-    def put(self,title):
-        proj=Project.query.filter_by(title=title).first()
+    @token_required
+    def put(self,current_user):
+        data = request.get_json()
+        proj=Project.query.filter_by(title=data['title']).first()
         proj.title=request.json.get('title',proj.title)
         proj.comments=request.json.get('comments',proj.comments)
         db.session.commit()
@@ -123,8 +128,8 @@ class PostProject_(Resource):
 
 class AssignedProposal(Resource):
     @token_required
-    @staticmethod  
-    def get():
+##    @staticmethod  
+    def get(self,current_user):
         project = Proposal.query.all()
         ## will need to iterate through the recode project like the for loop
         return [x.json() for x in project]

@@ -29,17 +29,18 @@ def token_required(f):
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
         if not token:
-            return jsonify({'message':'Token is missing'}),401
+            return make_response('Invalid Token',401,{'www-Authenticate':'Invalid Token"'})
         try:
             data = jwt.decode(token,app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(publicID=data['publicID']).first()
+            current_user = User.query.filter_by(publicID=data['public_id']).first()
         except:
-            return jsonify({'message':'Token is invalid'}),401
-        return f(curent_user,*args,**kwargs)   
+            return make_response('Invalid Token',401,{'www-Authenticate':'Invalid Token"'})
+        return f(current_user,*args,**kwargs)   
     return decorated
 
 
 class Register(Resource):
+    
     @staticmethod
     def post(email,reg_no,password,confirm_password):
         '''Generating public ID'''
@@ -114,8 +115,8 @@ class Login1(Resource):
 
 class Logout1(Resource):
     @token_required
-    @staticmethod
-    @login_required
+##    @staticmethod
+##    @login_required
     def post(current_user):
         logout_user()
         flash('You were logged out.')
@@ -136,17 +137,25 @@ class ResetPassword(Resource):
         
                 
 class GetAllProjects(Resource):
-##    @token_required
-    def get(self):
+    @token_required
+    def get(self,current_user):
         project = Project.query.all()
         return [x.json() for x in project]
 
 
 class PostProposals(Resource):
-##    @token_required
-    @staticmethod
-        
-    def post(title,reg_no, problem_statement,abstract,student_pair,proposal_uploadfile):
+    @token_required
+##    @staticmethod  
+    def post(self,current_user):
+
+        data = request.get_json()
+        title = data['title']
+        reg_no = data['reg_no']
+        problem_statement = data['problem_statement']
+        abstract = data['abstract']
+        student_pair = data['student_pair']
+        proposal_upload = data['proposal_upload']
+        '''Done not forget to change the proposal upload to a byte type object'''
 ##        header = {'Content-Type':'text/html'}    
 ##        form = Proposal_submittion_Form()   
         status = 'pending'
@@ -154,7 +163,7 @@ class PostProposals(Resource):
         email = 'None'
         comment = 'None'
         
-        x = 'rereretereftettrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
+##        x = 'rereretereftettrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
 ##        y = x.encode('utf-8')
 ##        title=form.title.data
 ##        reg_no=form.reg_no.data
@@ -174,7 +183,7 @@ class PostProposals(Resource):
 ##                return filename
 ######            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         p_upload = Proposal(title=title,reg_no=reg_no,problem_statement=problem_statement,
-                            abstract=abstract,proposal_uploadfile=x ,student_pair=student_pair,
+                            abstract=abstract,proposal_uploadfile=proposal_upload ,student_pair=student_pair,
                             status=status,supervisor=supervisor,email=email,comment=comment)
 ####        p_upload.title=title
 ####        p_upload.problem_statement
@@ -183,15 +192,19 @@ class PostProposals(Resource):
         return p_upload.json()
 ##            flash('File Uploaded')
 ##        return make_response(render_template('try.html',form=form))
-    
-    def delete(self,title):
-        prop=Proposal.query.filter_by(title=title).first()
+
+    @token_required
+    def delete(self,current_user):
+        data = request.get_json()
+        prop=Proposal.query.filter_by(title=data['title']).first()
         db.session.delete(prop)
         db.session.commit()
         return {'status':'succces'}
 
-    def put(self,title):
-        prop=Proposal.query.filter_by(title=title).first()
+    @token_required
+    def put(self,current_user):
+        data = request.get_json()
+        prop=Proposal.query.filter_by(title=data['title']).first()
         prop.title=request.json.get('title',prop.title)
         prop.problem_statment=request.json.get('problem_statment',prop.problem_statment)
         prop.abstract=request.json.get('abstract',prop.abstract)
@@ -199,23 +212,23 @@ class PostProposals(Resource):
         prop.student_pair=request.json.get('student_pair',prop.student_pair)
         db.session.commit()
         return jsonify({'pro':prop})
-        
-                        
+         
 class ViewPrjects(Resource):
     @token_required
-    @staticmethod
-    def get(reg_no):
+##    @staticmethod
+    def get(self,current_user):
+        data = request.get_json()
         error = None
-        project = Proposal.query.filter_by(reg_no=str(reg_no)).first()
+        project = Proposal.query.filter_by(reg_no=data['reg_no']).first()
         rejected = Rejected_Proposal.query.filter_by(reg_no=str(reg_no)).all()
         for y in rejected:
             return y.json()
                 
                         
 class ViewProposals(Resource):
-##    @token_required
-    @staticmethod
-    def get():
+    @token_required
+##    @staticmethod
+    def get(self,current_user):
         prop = Proposal.query.all()
         for x in prop:
             return x.json()  

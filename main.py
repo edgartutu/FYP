@@ -9,25 +9,23 @@ from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingP
 
 api = Api(app)
 
-
-
 api.add_resource(Register, '/register/<string:email>/<string:reg_no>/<string:password>')
 api.add_resource(Login1, '/login-user')
 api.add_resource(Logout1, '/logout')
 ##api.add_resource(ResetPassword, '/reset-password')
 api.add_resource(GetAllProjects, '/getprojects')
-api.add_resource(PostProposals, '/postproposals/<string:title>/<string:reg_no>/<string:problem_statement>/<string:abstract>/<string:student_pair>/<string:proposal_uploadfile>',endpoint='postproposals')
-api.add_resource(PostProposals, '/postproposals/del/<string:title>',endpoint='postproposals-del')
+api.add_resource(PostProposals, '/postproposals',endpoint='postproposals')
+api.add_resource(PostProposals, '/postproposals/del',endpoint='postproposals-del')
 api.add_resource(ViewPrjects, '/viewprojects')
 api.add_resource(ViewProposals, '/viewproposals')
 ##
 api.add_resource(Login, '/login-admin')
 api.add_resource(Logout, '/logout-user')
 api.add_resource(ApproveProject, '/approve')
-api.add_resource(PostProject, '/postproject/<string:title>/<string:comments>')
+api.add_resource(PostProject, '/postproject')
 api.add_resource(PostProject, '/postproject/del/<string:title>', endpoint='postproject-del')
 api.add_resource(PendingProposal, '/pendingproposal')
-api.add_resource(ProposalComment, '/proposalcomment/<string:comment>')
+api.add_resource(ProposalComment, '/proposalcomment')
 ##
 api.add_resource(Login2, '/login-guest')
 api.add_resource(Logout2, '/logout-guest')
