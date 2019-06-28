@@ -33,12 +33,12 @@ class TestUsers(BaseTestCase):
    
     def test_get_user_objects(self):
         '''get projects data'''
-        r = self.client.get('http://localhost:5000/viewprojects',content_type='text')
+        r = self.client.get('http://localhost:5000/viewprojects/<string:reg_no>',content_type='text')
         self.assertEqual(r.status_code, 200)
         n = self.client.get('http://localhost:5000/getprojects',content_type='text')
         self.assertEqual(r.status_code, 200)
-##        j = self.client.get('http://localhost:5000/postprojects',content_type='text')
-##        self.assertEqual(r.status_code, 200)
+        j = self.client.get('http://localhost:5000/postprojects',content_type='text')
+        self.assertEqual(r.status_code, 200)
 
     def test_get_guest_objects(self):
         '''get  data'''
@@ -53,7 +53,7 @@ class TestUsers(BaseTestCase):
     def test_post_admin_objects(self):
         '''get  data'''
         student={'name':'mutawe','school':'school','program':'program'}
-        r = self.client.post('http://localhost:5000/postproject/<string:title>/<string:comments>/<string:date_submit>',data=json.dumps(student))
+        r = self.client.post('http://localhost:5000/postproject/<string:title>/<string:comments>',data=json.dumps(student))
         self.assertEqual(r.status_code, 200)
 
     def test_regester_user_objects(self):
@@ -61,7 +61,31 @@ class TestUsers(BaseTestCase):
         student={'name':'mutawe','school':'school','program':'program'}
         r = self.client.post('http://localhost:5000/register/<string:email>/<string:reg_no>/<string:password>/<string:confirm_password>',data=json.dumps(student))
         self.assertEqual(r.status_code, 200)
-            
+
+    
+    def test_post_proposals_objects(self):
+        '''get  data'''
+        student={'name':'mutawe','school':'school','program':'program'}
+        r = self.client.post('http://localhost:5000/postproposals/<string:title>/<string:reg_no>/<string:problem_statement>/<string:abstract>/<string:student_pair>/<string:proposal_uploadfile>',data=json.dumps(student))
+        self.assertEqual(r.status_code, 200)
+
+    def test_post_comment_on_proposals_objects(self):
+        '''get  data'''
+        student={'name':'mutawe','school':'school','program':'program'}
+        r = self.client.post('http://localhost:5000/postproposals/proposalcomment/<string:comment>',data=json.dumps(student))
+        self.assertEqual(r.status_code, 200)
+
+    def test_post_comment_on_proposals_objects(self):
+        '''get  data'''
+        student={'name':'mutawe','school':'school','program':'program'}
+        r = self.client.delete('http://localhost:5000/postproposals/proposalcomment/<string:comment>',data=json.dumps(student))
+        self.assertEqual(r.status_code, 200)
+##    def test_pos_admin_objects(self):
+##        '''get  data'''
+##        student={'name':'mutawe','school':'school','program':'program'}
+##        r = self.client.post('http://localhost:5000/postproject/<string:title>',data=json.dumps(student))
+##        self.assertEqual(r.status_code, 200)
+##    
 
             
 
@@ -156,24 +180,23 @@ class TestUsers(BaseTestCase):
 ##        res = self.client().delete('/users/me', headers={'Content-Type': 'application/json', 'api-token': api_token})
 ##        self.assertEqual(res.status_code, 204)   
 ##
-##    def test_registration(self):
-##        """ Test for user registration """
-##        with self.client:
-##            response = self.client.post(
-##                '/register',
-##                data=json.dumps(dict(
-##                    reg_no='13/U/147993/PSA',
-##                    password='123456'
-##                )),
-##                content_type='application/json'
-##            )
+    def test_registration(self):
+        """ Test for user registration """
+        with self.client:
+            response = self.client.post(
+                '/register/<string:email>/<string:reg_no>/<string:password>',
+                data=json.dumps(dict(
+                    email='walugembe.john@gmail.com',
+                    reg_no='13/U/147993/PSA',
+                    password='123456'
+                )),
+                content_type='application/json'
+            )
 ##            data = json.loads(response.data.decode())
-##            self.assertTrue(data['status'] == 'success')
-##            self.assertTrue(data['message'] == 'Successfully registered.')
 ##            self.assertTrue(data['auth_token'])
-##            self.assertTrue(response.content_type == 'application/json')
-##            self.assertEqual(response.status_code, 201)
-##
+            self.assertTrue(response.content_type == 'application/json')
+            self.assertEqual(response.status_code, 200)
+
 ##
 ##
 ##        
