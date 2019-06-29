@@ -1,8 +1,8 @@
 from project import app, db
 from flask_restful import Resource, Api
 from flask_restful import Api
-from project.users.views import Register,Login1,Logout1,ResetPassword,GetAllProjects,PostProposals,ViewPrjects,ViewProposals
-from project.guest.views import Login2,Logout2,AssignedProposal,PostProject_
+from project.users.views import Register,Login1,Logout1,ResetPassword,GetAllProjects,PostProposals,ViewPrjects,ViewProposals,PostProgressReport,Previous_topics_by_title,Previous_topics_by_year,UpdateAbstract
+from project.guest.views import Login2,Logout2,AssignedProposal,PostProject_,Reports,ProgressComment
 from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment
 
 
@@ -18,6 +18,10 @@ api.add_resource(PostProposals, '/postproposals',endpoint='postproposals')
 api.add_resource(PostProposals, '/postproposals/del',endpoint='postproposals-del')
 api.add_resource(ViewPrjects, '/viewprojects')
 api.add_resource(ViewProposals, '/viewproposals')
+api.add_resource(PostProgressReport, '/postprogressreport')
+api.add_resource(Previous_topics_by_title, '/filterprevioustopicbytitle')
+api.add_resource(Previous_topics_by_year, '/filterprevioustopicbyyear')
+api.add_resource(UpdateAbstract, '/updateabstract')
 ##
 api.add_resource(Login, '/login-admin')
 api.add_resource(Logout, '/logout-user')
@@ -32,8 +36,8 @@ api.add_resource(Logout2, '/logout-guest')
 api.add_resource(AssignedProposal, '/viewproposals')
 api.add_resource(PostProject_, '/pro/<string:title>/<string:comments>')
 api.add_resource(PostProject_, '/pro/delete/<string:title>',endpoint='project-delete')
-
-         
+api.add_resource(ProgressComment, '/progresscomment')
+api.add_resource(Reports, '/reports')
 
 if __name__ == '__main__':
     app.run(debug=True)

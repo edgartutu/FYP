@@ -1,5 +1,5 @@
 from project import app, db
-from project.models import User, Admin, Proposal, Department,Project,Rejected_Proposal
+from project.models import User, Admin,Progress_comment,Progress_report, Proposal,Previous_topic,Department,Project,Rejected_Proposal
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for,make_response
 from flask_login import login_user,login_required, logout_user
@@ -233,9 +233,56 @@ class ViewProposals(Resource):
         for x in prop:
             return x.json()  
         
-                
+class PostProgressReport(Resource):
+    @token_required
+    def post(current_user):
+        data = request.get_json()
+        reg_no = data['reg_no']
+        title = data['title']
+        files = data['files']
+
+        progress = Progress_report(reg_no,title,files)
+        db.session.add(progress)
+        db.session.commit()
+
+        return data
+
+class Previous_topics_by_title(Resource):
+    @token_required
+    def get(current_user):
+        data = request.get_json()
+        topic = Previous_topic.query.filter_by(title=data['title']).first()
+        try:
+            return topic.json()
+        except Exception:
+            return "No reports available by that title"
+
+class Previous_topics_by_year(Resource):
+    @token_required
+    def get(current_user):
+        data = request.get_json()
+        topic = Previous_topic.query.filter_by(title=data['year']).first()
+        try:
+            return topic.json()
         
-        
+        except Exception:
+            return "No reports available for that year"
+
+class UpdateAbstract(Resource):
+    @token_required
+    def post(current_user):
+        data = request.get_json()
+        update = Proposal.query.filter_by(reg_no=data['reg_no']).first()
+        update.abstract = data['abstract']
+        db.session.commit()
+        try:
+            return update.json()
+
+        except Exception:
+            return "Error, Operation unsuccessful"
+
+
+
 
 
     

@@ -1,7 +1,7 @@
 from project import app, db
-from project.models import User, Admin, Proposal, Department,Project
+from project.models import User, Admin, Proposal, Department,Project,Progress_report,Progress_comment
 from flask_restful import Resource, Api
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for,make_response
 from flask_login import login_user,login_required, logout_user
 from .forms import LoginForm
 from project.models import User
@@ -129,12 +129,27 @@ class PostProject_(Resource):
 class AssignedProposal(Resource):
     @token_required
 ##    @staticmethod  
-    def get(self,current_user):
+    def get(current_user):
         project = Proposal.query.all()
         ## will need to iterate through the recode project like the for loop
         return [x.json() for x in project]
 
-        
+class ProgressComment(Resource):
+    @token_required
+    def post(current_user):
+        data = request.get_json()
+        comment = Progress_comment(reg_no=data['reg_no'],body=data['body'])
+        db.session.add(comment)
+        db.session.commit()
+        return data
+
+class Reports(Resource):
+    @token_required
+    def post(current_user):
+        data = request.get_json()
+        reports = Progress_comment.query.filter_by(reg_no=data['reg_no']).first()
+        return reports.body
+
 
 
         

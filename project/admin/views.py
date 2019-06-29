@@ -118,7 +118,7 @@ class ApproveProject(Resource):
             return [x for x in rejected]      
 ##        return make_response(render_template('approveprojects.html',form=form))
     
-    def post(self,current_user):
+    def post(current_user):
         data = request.get_json()
         student = Proposal.query.filter_by(reg_no=data['reg_no']).first()
         
@@ -220,4 +220,5 @@ class ProposalComment(Resource):
 ####        Proposal.comment = request.form['comment']
 ##        Proposal.comment=comment
 ##        db.session.commit()
-##        
+
+        

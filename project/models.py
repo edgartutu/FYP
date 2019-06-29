@@ -82,7 +82,40 @@ class User(db.Model, UserMixin):
     def check_password(self,password):
         return check_password_hash(self.password_hash,password)
 
+class Progress_report(db.Model,UserMixin):
+    __tablename__='progress_reports'
+    id = db.Column(db.Integer(),primary_key=True)
+    reg_no = db.Column(db.String(25))
+##    files = db.Column(db.LargeBinary)
+    '''change this back to large binary'''
+    files = db.Column(db.String(100))
 
+    def __init__(self,reg_no,files):
+        self.reg_no = reg_no
+        self.files = files
+
+class Previous_topic(db.Model,UserMixin):
+    __tablename__='previous_topics'
+    id = db.Column(db.Integer(),primary_key=True)
+    title = db.Column(db.String(25))
+    abstract = db.Column(db.String(3000))
+    year = db.Column(db.String(15))
+
+    def __init__(self,title,abstract,year):
+        self.title = title
+        self.abstract = abstract
+        self.year = year
+
+class Progress_comment(db.Model,UserMixin):
+    __tablename__='comment'
+    id = db.Column(db.Integer(),primary_key=True)
+    reg_no = db.Column(db.String(25))
+    body = db.Column(db.String(3000))
+
+    def __init__(self,reg_no,body):
+        self.reg_no = reg_no
+        self.body = body
+    
 class Project(db.Model, UserMixin):
     __tablename__ = 'projects'
     title = db.Column(db.String(500),primary_key=True)
@@ -108,7 +141,7 @@ class Proposal(db.Model, UserMixin):
     reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
     title=db.Column(db.String(100))
     problem_statement = db.Column(db.String(1000))
-    abstract = db.Column(db.String(1000))
+    abstract = db.Column(db.String(5000))
     proposal_uploadfile = db.Column(db.String(1000))
     student_pair = db.Column(db.String(500))
     status = db.Column(db.String(50))
