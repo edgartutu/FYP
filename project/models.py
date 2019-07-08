@@ -173,14 +173,15 @@ class Rejected_Proposal(db.Model, UserMixin):
     reg_no = db.Column(db.String(25))
     problem_statement = db.Column(db.String(1000))
     abstract = db.Column(db.String(1000))
-    proposal_uploadfile = db.Column(db.LargeBinary)
+    proposal_uploadfile = db.Column(db.String(2000))
     student = db.Column(db.String(500))
     status = db.Column(db.String(50))
     supervisor = db.Column(db.String(120))
     email = db.Column(db.String(500))
     comment = db.Column(db.String(500)) 
 
-    def __init__(self, problem_statement, abstract, proposal_uploadfile, student, student_no,title,status,supervisor,email,comment):
+    def __init__(self,reg_no,problem_statement, abstract, proposal_uploadfile, student, student_no,title,status,supervisor,email,comment):
+        self.reg_no = reg_no
         self.title = title
         self.problem_statement = problem_statement
         self.abstract = abstract
@@ -193,9 +194,8 @@ class Rejected_Proposal(db.Model, UserMixin):
         self.comment = comment
 
     def json(self):
-        return {'title':self.title,'problem_statement':self.problem_statement, 'abstract':self.abstract,
-                'proposal_uploadfile':self.proposal_uploadfile,
-                'student':self.student, 'student_no':self.student_no}
+        return {'reg_no':self.reg_no,'title':self.title,'problem_statement':self.problem_statement, 'abstract':self.abstract,
+                'proposal_uploadfile':self.proposal_uploadfile, 'supervisor':self.supervisor,'status':self.status,'comment':self.comment}
 
 
 db.create_all()

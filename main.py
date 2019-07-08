@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 from flask_restful import Api
 from project.users.views import Register,Login1,Logout1,ResetPassword,GetAllProjects,PostProposals,ViewPrjects,ViewProposals,PostProgressReport,Previous_topics_by_title,Previous_topics_by_year,UpdateAbstract
 from project.guest.views import Login2,Logout2,AssignedProposal,PostProject_,Reports,ProgressComment
-from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment
+from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment,ApprovedProposal,viewprojects,viewrejected
 
 
 
@@ -16,8 +16,8 @@ api.add_resource(Logout1, '/logout')
 api.add_resource(GetAllProjects, '/getprojects')
 api.add_resource(PostProposals, '/postproposals',endpoint='postproposals')
 api.add_resource(PostProposals, '/postproposals/del',endpoint='postproposals-del')
-api.add_resource(ViewPrjects, '/viewprojects')
-api.add_resource(ViewProposals, '/viewproposals')
+api.add_resource(ViewPrjects, '/viewprojects2')
+##api.add_resource(ViewProposals, '/viewproposals')
 api.add_resource(PostProgressReport, '/postprogressreport')
 api.add_resource(Previous_topics_by_title, '/filterprevioustopicbytitle')
 api.add_resource(Previous_topics_by_year, '/filterprevioustopicbyyear')
@@ -30,6 +30,9 @@ api.add_resource(PostProject, '/postproject')
 api.add_resource(PostProject, '/postproject/del/<string:title>', endpoint='postproject-del')
 api.add_resource(PendingProposal, '/pendingproposal')
 api.add_resource(ProposalComment, '/proposalcomment')
+api.add_resource(ApprovedProposal, '/approved')
+api.add_resource(viewprojects, '/adminviewprojects')
+api.add_resource(viewrejected, '/viewrejected')
 ##
 api.add_resource(Login2, '/login-guest')
 api.add_resource(Logout2, '/logout-guest')

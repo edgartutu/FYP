@@ -144,9 +144,9 @@ class GetAllProjects(Resource):
 
 
 class PostProposals(Resource):
-    @token_required
+##    @token_required
 ##    @staticmethod  
-    def post(self,current_user):
+    def post(current_user):
 
         data = request.get_json()
         title = data['title']
@@ -214,21 +214,23 @@ class PostProposals(Resource):
         return jsonify({'pro':prop})
          
 class ViewPrjects(Resource):
-    @token_required
+#    @token_required
 ##    @staticmethod
-    def get(self,current_user):
+    def post(current_user):
         data = request.get_json()
+####        data = {"reg_no":"1234"}
         error = None
-        project = Proposal.query.filter_by(reg_no=data['reg_no']).first()
-        rejected = Rejected_Proposal.query.filter_by(reg_no=str(reg_no)).all()
-        for y in rejected:
-            return y.json()
+        project = Proposal.query.filter_by(reg_no=str(data['reg_no']))
+####        rejected = Rejected_Proposal.query.filter_by(reg_no=data['reg_no']).first()
+        return [x.json() for x in project]
+#        for y in rejected:
+#            return y.json(),project
                 
                         
 class ViewProposals(Resource):
-    @token_required
+##    @token_required
 ##    @staticmethod
-    def get(self,current_user):
+    def get(current_user):
         prop = Proposal.query.all()
         for x in prop:
             return x.json()  

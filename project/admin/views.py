@@ -107,9 +107,9 @@ class ResetPassword(Resource):
 
         
 class ApproveProject(Resource):
-    @token_required
+#    @token_required
 ##    @staticmethod
-    def get():
+    def get(current_user):
         if Proposal.status =='Approved':
             aproved = Proposal.query.all()
             return [x for x in aproved]
@@ -120,7 +120,7 @@ class ApproveProject(Resource):
     
     def post(current_user):
         data = request.get_json()
-        student = Proposal.query.filter_by(reg_no=data['reg_no']).first()
+        student = Proposal.query.filter_by(reg_no=data["reg_no"]).first()
         
         if student is not None:
 ##            Proposal.json(self)
@@ -149,8 +149,8 @@ class ApproveProject(Resource):
                 status = 'Rejected'
                 supervisor = 'None'
                 email = 'None'
-                cmmt = data['comment']
-                insert = Rejected_Proposal(title,reg_no,problem_statment,abstact,proposal_uploadfile,student,status,supervisor,email,cmmt)
+                comment = data['comment']
+                insert = Rejected_Proposal(title,reg_no,problem_statment,abstact,proposal_uploadfile,student,status,supervisor,email,comment)
                 db.session.add(insert)
                 db.session.delete(rejected)
                 db.session.commit()
@@ -165,9 +165,9 @@ class ApproveProject(Resource):
 ##        return make_response(render_template('approveproject.html',form=form))
          
 class PostProject(Resource):
-    @token_required
+#    @token_required
 ##    @staticmethod
-    def post(self,current_user):
+    def post(current_user):
         data = request.get_json()
 ##        form = ProjectForm(request.form)
         ## formate date
@@ -175,13 +175,13 @@ class PostProject(Resource):
         ## report = TextField('Upload File',validators=[DataRequired()])
 ##        if request.method == 'post':
                ## return redirect(request.url)
-        p=datetime.date.today()
+        p=str(datetime.date.today())
         fln = Project(title=data['title'] ,comments=data['comments'],date_submit=p)
         db.session.add(fln)
         db.session.commit()
         
 ##        return fln.json()
-    @token_required
+ #   @token_required
     def delete(self,current_user):
         data = request.get_json()
         proj=Project.query.filter_by(title=data['title']).first()
@@ -189,7 +189,7 @@ class PostProject(Resource):
         db.session.commit()
         return {'status':'succces'}
 
-    @token_required
+#    @token_required
     def put(self,current_user):
         data = request.get_json()
         proj=Project.query.filter_by(title=data['title']).first()
@@ -199,13 +199,12 @@ class PostProject(Resource):
         return jsonify({'proj':proj})
         
 class PendingProposal(Resource):
-    @token_required
+##    @token_required
 ##    @staticmethod
-    def get(self,current_user):
+    def get(current_user):
         students = Proposal.query.filter_by(status='pending').all()
         return [x.json() for x in students]
 
-    
 class ProposalComment(Resource):
     @token_required
 ##    @staticmethod
@@ -214,11 +213,29 @@ class ProposalComment(Resource):
         comm = Proposal(comment=data['comment'])
         db.session.add(comm)
         db.session.commit()
-        return com.json()
+        return comm.json()
 ##        
 ####        form = Proposal_comment_Form(request.form)
 ####        Proposal.comment = request.form['comment']
 ##        Proposal.comment=comment
 ##        db.session.commit()
+class ApprovedProposal(Resource):
+##    @token_required
+##    @staticmethod
+    def get(current_user):
+        students = Proposal.query.filter_by(status='Approved')
+        return [x.json() for x in students]
 
-        
+class viewprojects(Resource):
+##    @token_required
+##    @staticmethod
+    def get(current_user):
+        students = Project.query.all()
+        return [x.json() for x in students]
+
+class viewrejected(Resource):
+##    @token_required
+##    @staticmethod
+    def get(current_user):
+        students = Rejected_Proposal.query.all()
+        return [x.json() for x in students]
