@@ -71,7 +71,7 @@ def token_required(f):
     
 class Login(Resource):
     def get(self):
-        auth = request.authorization
+        auth = request.get_json()
         '''checking if authorization information is complete'''
         if not auth or not auth.username or not auth.password:
             return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})        
@@ -86,7 +86,7 @@ class Login(Resource):
         return make_response('Could not verify3',401,{'www-Authenticate':'Basic realm-"login required!"'})
 
 class Logout(Resource):
-    @token_required
+#    @token_required
 ##    @staticmethod
     @login_required
     def post(self,current_user):
@@ -165,7 +165,7 @@ class ApproveProject(Resource):
 ##        return make_response(render_template('approveproject.html',form=form))
          
 class PostProject(Resource):
-#    @token_required
+#   @token_required
 ##    @staticmethod
     def post(current_user):
         data = request.get_json()
@@ -199,14 +199,13 @@ class PostProject(Resource):
         return jsonify({'proj':proj})
         
 class PendingProposal(Resource):
-##    @token_required
-##    @staticmethod
-    def get(current_user):
-        students = Proposal.query.filter_by(status='pending').all()
+#    @token_required
+    def get(self,current_user):
+        students = Proposal.query.filter_by(status='pending')
         return [x.json() for x in students]
 
 class ProposalComment(Resource):
-    @token_required
+#    @token_required
 ##    @staticmethod
     def post(self,current_user):
         data = request.get_json()
@@ -220,22 +219,38 @@ class ProposalComment(Resource):
 ##        Proposal.comment=comment
 ##        db.session.commit()
 class ApprovedProposal(Resource):
-##    @token_required
-##    @staticmethod
-    def get(current_user):
+#   @token_required
+   def get(current_user):
         students = Proposal.query.filter_by(status='Approved')
         return [x.json() for x in students]
 
 class viewprojects(Resource):
-##    @token_required
-##    @staticmethod
+#    @token_required
     def get(current_user):
         students = Project.query.all()
         return [x.json() for x in students]
 
 class viewrejected(Resource):
-##    @token_required
+#    @token_required
 ##    @staticmethod
     def get(current_user):
         students = Rejected_Proposal.query.all()
         return [x.json() for x in students]
+
+class allstudents(Resource):
+#    @token_required
+    def get(current_user):
+        student = User.query.all()
+        return [x.json() for x in student]
+
+class allguest(Resource):
+#    @token_required
+    def get(current_user):
+        guest = Guest.query.all()
+        return [x.json() for x in guest]
+
+#class allprogressreports():
+#    @token_required
+#    def get(current_user):
+#        reports = Progress_report.query.all()
+#        return [x.json() for x in reports]

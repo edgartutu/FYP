@@ -1,5 +1,5 @@
 from project import app, db
-from project.models import User,Guest, Admin, Proposal, Department,Project,Progress_report,Progress_comment
+from project.models import User, Admin, Proposal, Department,Project,Progress_report,Progress_comment
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for,make_response
 from flask_login import login_user,login_required, logout_user
@@ -91,9 +91,9 @@ class Logout2(Resource):
 ##        return redirect(url_for(''))
 
 class PostProject_(Resource):
-##    @token_required
+    @token_required
 ##    @staticmethod
-    def post(current_user):
+    def post(self,current_user):
         data = request.get_json()
 ##        form = ProjectForm(request.form)
         ## formate date
@@ -108,7 +108,7 @@ class PostProject_(Resource):
         return fln.json()
 
     @token_required
-    def delete(current_user):
+    def delete(self,current_user):
         data = request.get_json()
         proj=Project.query.filter_by(title=data['title']).first()
         db.session.delete(proj)
@@ -127,16 +127,15 @@ class PostProject_(Resource):
 
 
 class AssignedProposal(Resource):
-##    @token_required
-##    @staticmethod
-##    return to current user
-    def get(self):
+    @token_required
+##    @staticmethod  
+    def get(current_user):
         project = Proposal.query.all()
         ## will need to iterate through the recode project like the for loop
         return [x.json() for x in project]
 
 class ProgressComment(Resource):
-##    @token_required
+    @token_required
     def post(current_user):
         data = request.get_json()
         comment = Progress_comment(reg_no=data['reg_no'],body=data['body'])
@@ -145,12 +144,11 @@ class ProgressComment(Resource):
         return data
 
 class Reports(Resource):
-##    @token_required
-    def get(current_user):
+    @token_required
+    def post(current_user):
         data = request.get_json()
-        reports = Progress_report.query.all()
-        return [x.json() for x in reports]
-    
+        reports = Progress_comment.query.filter_by(reg_no=data['reg_no']).first()
+        return reports.body
 
 
 

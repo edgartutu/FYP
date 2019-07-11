@@ -14,6 +14,10 @@ app=Flask(__name__)
 
 app.config['SECRET_KEY'] = 'mysecretkey'
 
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(APP_ROOT,'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 CORS(app)
 
 ################# SQL DATABASE SECTION ##########

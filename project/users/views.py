@@ -148,13 +148,25 @@ class PostProposals(Resource):
 ##    @staticmethod  
     def post(current_user):
 
-        data = request.get_json()
+        data = request.form
         title = data['title']
         reg_no = data['reg_no']
         problem_statement = data['problem_statement']
         abstract = data['abstract']
-        student_pair = data['student_pair']
-        proposal_upload = data['proposal_upload']
+        reg_no2 = data['reg_no2']
+        student1 = data['student1']
+        student2 = data['student2']
+
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        
+        fileExt = filename.split('.')[1]
+        autoGenFileName = uuid.uuid4()
+
+        newFilename = str(autoGenFileName)+'.'+fileExt
+
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'],newFilename))
+
         '''Done not forget to change the proposal upload to a byte type object'''
 ##        header = {'Content-Type':'text/html'}    
 ##        form = Proposal_submittion_Form()   
@@ -162,36 +174,15 @@ class PostProposals(Resource):
         supervisor = 'None'
         email = 'None'
         comment = 'None'
-        
-##        x = 'rereretereftettrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
-##        y = x.encode('utf-8')
-##        title=form.title.data
-##        reg_no=form.reg_no.data
-##        problem_statment=form.problem_statment.data
-##        abstract=form.abstract.data
-##        student=form.student.data    
-##        if request.method == 'POST':
-##            if 'file' not in request.files:
-##                flash('No file')              
-##            file = request.files['inputfile']
-##            ''' add validation'''            
-##            if file.filename == '':
-##                flash('No file selected')
-##                ## return redirect(request.url)
-##            elif file and allowed_file(file.filename):
-##                filename = secure_filename(file.filename)
-##                return filename
-######            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
         p_upload = Proposal(title=title,reg_no=reg_no,problem_statement=problem_statement,
-                            abstract=abstract,proposal_uploadfile=proposal_upload ,student_pair=student_pair,
-                            status=status,supervisor=supervisor,email=email,comment=comment)
-####        p_upload.title=title
-####        p_upload.problem_statement
+                            abstract=abstract ,reg_no2=reg_no2,proposal_uploadfile=newFilename,
+                            status=status,supervisor=supervisor,email=email,
+                            comment=comment,student1=student1,student2=student2)
+
         db.session.add(p_upload)
         db.session.commit()
-        return p_upload.json()
-##            flash('File Uploaded')
-##        return make_response(render_template('try.html',form=form))
+        return data
 
     @token_required
     def delete(self,current_user):
@@ -231,19 +222,21 @@ class ViewProposals(Resource):
 ##    @token_required
 ##    @staticmethod
     def get(current_user):
-        prop = Proposal.query.all()
-        for x in prop:
-            return x.json()  
+        students = Project.query.all()
+        return [x.json() for x in students]
         
 class PostProgressReport(Resource):
-    @token_required
+#    @token_required
     def post(current_user):
         data = request.get_json()
-        reg_no = data['reg_no']
-        title = data['title']
+        date_s = datetime.datetime.today()
+        datestamp = date_s.strftime('%d-%m-%Y')
+        reg_no1 = data['reg_no']
         files = data['files']
+        supervisor = Proposal.query.filter_by(reg_no=reg_no1).first()
+        s_email = supervisor.email
 
-        progress = Progress_report(reg_no,title,files)
+        progress = Progress_report(reg_no=reg_no1,files=files,supervisor_email=s_email,datestamp=datestamp)
         db.session.add(progress)
         db.session.commit()
 
@@ -260,28 +253,28 @@ class Previous_topics_by_title(Resource):
             return "No reports available by that title"
 
 class Previous_topics_by_year(Resource):
-    @token_required
+#    @token_required
     def get(current_user):
         data = request.get_json()
-        topic = Previous_topic.query.filter_by(title=data['year']).first()
-        try:
-            return topic.json()
+        topic = Previous_topic.query.all()
+#        try:
+        return [x.json() for x in topic]
         
-        except Exception:
-            return "No reports available for that year"
+#        except Exception:
+#            return "No reports available for that year"
 
 class UpdateAbstract(Resource):
-    @token_required
+#    @token_required
     def post(current_user):
         data = request.get_json()
         update = Proposal.query.filter_by(reg_no=data['reg_no']).first()
         update.abstract = data['abstract']
         db.session.commit()
-        try:
-            return update.json()
+#        try:
+#            return update.json()
 
-        except Exception:
-            return "Error, Operation unsuccessful"
+#        except Exception:
+#            return "Error, Operation unsuccessful"
 
 
 
