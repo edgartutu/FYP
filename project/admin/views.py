@@ -1,5 +1,5 @@
 from project import app, db
-from project.models import User, Admin, Proposal, Department,Project,Rejected_Proposal
+from project.models import User, Admin, Proposal, Department,Project,Rejected_Proposal,Guest,Progress_report
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for,make_response
 from flask_login import login_user,login_required, logout_user
@@ -16,6 +16,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 import jwt
 from functools import wraps
 import json
+import random
 
 api = Api(app)
 
@@ -165,23 +166,14 @@ class ApproveProject(Resource):
 ##        return make_response(render_template('approveproject.html',form=form))
          
 class PostProject(Resource):
-#   @token_required
-##    @staticmethod
+#    @token_required
     def post(current_user):
         data = request.get_json()
-##        form = ProjectForm(request.form)
-        ## formate date
-##        date_submit = datetime.date.today()
-        ## report = TextField('Upload File',validators=[DataRequired()])
-##        if request.method == 'post':
-               ## return redirect(request.url)
         p=str(datetime.date.today())
         fln = Project(title=data['title'] ,comments=data['comments'],date_submit=p)
         db.session.add(fln)
         db.session.commit()
         
-##        return fln.json()
- #   @token_required
     def delete(self,current_user):
         data = request.get_json()
         proj=Project.query.filter_by(title=data['title']).first()
@@ -225,7 +217,7 @@ class ApprovedProposal(Resource):
         return [x.json() for x in students]
 
 class viewprojects(Resource):
-#    @token_required
+    @token_required
     def get(current_user):
         students = Project.query.all()
         return [x.json() for x in students]
@@ -249,8 +241,41 @@ class allguest(Resource):
         guest = Guest.query.all()
         return [x.json() for x in guest]
 
-#class allprogressreports():
+class allprogressreports1(Resource):
+##    @token_required
+    def get(current_user):
+        reports = Progress_report.query.all()
+        return [x.json() for x in reports]
+
+class progressreportquery(Resource):
 #    @token_required
-#    def get(current_user):
-#        reports = Progress_report.query.all()
-#        return [x.json() for x in reports]
+    def get(current_user):
+        data = request.get_json()
+        reg_no = data["reg_no"]
+        report = Progress_report.query.filter_by(reg_no=reg_no)
+        return [x.json() for x in report]
+
+class proposalbysupervisor(Resource):
+#    @token_required
+    def get(current_user):
+        data = request.get_json()
+        email = data["email"]
+        proposal = Proposal.query.filter_by(email=email)
+        return [x.json() for x in proposal]
+
+## add routes
+class preprocessing(Resource):
+#    @token_required
+    def get(current_user):
+        data = request.get_json()
+        reg_no = data['reg_no']
+        comment = data['comment']
+        proposal = Proposal.query.filter_by(reg_no=reg_no).first()
+        proposal.comment = 'Hello'
+        db.session.commit()
+        return data
+
+
+
+
+

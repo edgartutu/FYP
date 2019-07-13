@@ -32,7 +32,7 @@ def token_required(f):
             return make_response('Invalid Token',401,{'www-Authenticate':'Invalid Token"'})
         try:
             data = jwt.decode(token,app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(publicID=data['public_id']).first()
+            current_user = User.query.filter_by(reg_no=data['reg_no']).first()
         except:
             return make_response('Invalid Token',401,{'www-Authenticate':'Invalid Token"'})
         return f(current_user,*args,**kwargs)   
@@ -98,17 +98,19 @@ class Register(Resource):
 ####        return render_template('try.html',form=form,error=error)
 
 class Login1(Resource):
-    def get(self):
+    def post(self):
         auth = request.authorization
+        data = request.get_json()
+        
         '''checking if authorization information is complete'''
-        if not auth or not auth.username or not auth.password:
+        if not data or not data['username'] or not data['password']:
             return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})        
-        admin = User.query.filter_by(reg_no=auth.username).first()
+        admin = User.query.filter_by(reg_no=data['username']).first()
         if not admin:
             return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})       
 ##        if check_password_hash(admin.password,auth.password):
-        if admin.password_hash == auth.password:
-            token = jwt.encode({'public_id':admin.publicID,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
+        if admin.password_hash == data['password']:
+            token = jwt.encode({'reg_no':admin.reg_no,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
             return jsonify({'token':token.decode('UTF-8')})
         return make_response('Could not verify3',401,{'www-Authenticate':'Basic realm-"login required!"'})
 
@@ -144,15 +146,16 @@ class GetAllProjects(Resource):
 
 
 class PostProposals(Resource):
-##    @token_required
+#    @token_required
 ##    @staticmethod  
     def post(current_user):
 
         data = request.form
         title = data['title']
         reg_no = data['reg_no']
+        proposal_ref = data['proposal_ref']
         problem_statement = data['problem_statement']
-        abstract = data['abstract']
+        methodology = data['methodology']
         reg_no2 = data['reg_no2']
         student1 = data['student1']
         student2 = data['student2']
@@ -175,8 +178,8 @@ class PostProposals(Resource):
         email = 'None'
         comment = 'None'
 
-        p_upload = Proposal(title=title,reg_no=reg_no,problem_statement=problem_statement,
-                            abstract=abstract ,reg_no2=reg_no2,proposal_uploadfile=newFilename,
+        p_upload = Proposal(title=title,reg_no=reg_no,proposal_ref=proposal_ref,problem_statement=problem_statement,
+                            methodology=methodology ,reg_no2=reg_no2,proposal_uploadfile=newFilename,
                             status=status,supervisor=supervisor,email=email,
                             comment=comment,student1=student1,student2=student2)
 
@@ -184,15 +187,13 @@ class PostProposals(Resource):
         db.session.commit()
         return data
 
-    @token_required
-    def delete(self,current_user):
+    def delete(current_user):
         data = request.get_json()
         prop=Proposal.query.filter_by(title=data['title']).first()
         db.session.delete(prop)
         db.session.commit()
         return {'status':'succces'}
 
-    @token_required
     def put(self,current_user):
         data = request.get_json()
         prop=Proposal.query.filter_by(title=data['title']).first()
@@ -205,7 +206,7 @@ class PostProposals(Resource):
         return jsonify({'pro':prop})
          
 class ViewPrjects(Resource):
-#    @token_required
+    @token_required
 ##    @staticmethod
     def post(current_user):
         data = request.get_json()
@@ -219,7 +220,7 @@ class ViewPrjects(Resource):
                 
                         
 class ViewProposals(Resource):
-##    @token_required
+    @token_required
 ##    @staticmethod
     def get(current_user):
         students = Project.query.all()
@@ -228,22 +229,32 @@ class ViewProposals(Resource):
 class PostProgressReport(Resource):
 #    @token_required
     def post(current_user):
-        data = request.get_json()
+        data = request.form
         date_s = datetime.datetime.today()
         datestamp = date_s.strftime('%d-%m-%Y')
         reg_no1 = data['reg_no']
-        files = data['files']
+
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        
+        fileExt = filename.split('.')[1]
+        autoGenFileName = uuid.uuid4()
+
+        newFilename = str(autoGenFileName)+'.'+fileExt
+
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'],newFilename))
+        
         supervisor = Proposal.query.filter_by(reg_no=reg_no1).first()
         s_email = supervisor.email
 
-        progress = Progress_report(reg_no=reg_no1,files=files,supervisor_email=s_email,datestamp=datestamp)
+        progress = Progress_report(reg_no=reg_no1,files=newFilename,supervisor_email=s_email,datestamp=datestamp)
         db.session.add(progress)
         db.session.commit()
 
         return data
 
 class Previous_topics_by_title(Resource):
-    @token_required
+#    @token_required
     def get(current_user):
         data = request.get_json()
         topic = Previous_topic.query.filter_by(title=data['title']).first()
@@ -268,7 +279,7 @@ class UpdateAbstract(Resource):
     def post(current_user):
         data = request.get_json()
         update = Proposal.query.filter_by(reg_no=data['reg_no']).first()
-        update.abstract = data['abstract']
+        update.methodology = data['methodology']
         db.session.commit()
 #        try:
 #            return update.json()
@@ -276,9 +287,44 @@ class UpdateAbstract(Resource):
 #        except Exception:
 #            return "Error, Operation unsuccessful"
 
+# add routes
+class resubmitfiles(Resource):
+#    @token_required
+    def post(current_user):
+        data = request.get_json()
+        update = Proposal.query.filter_by(reg_no=data['reg_no']).first()
 
-
-
-
-    
+        file = request.files['file']
+        filename = secure_filename(file.filename)
         
+        fileExt = filename.split('.')[1]
+        autoGenFileName = uuid.uuid4()
+
+        newFilename = str(autoGenFileName)+'.'+fileExt
+
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'],newFilename))
+
+        update.proposal_uploadfile = newFilename
+        db.session.commit()
+
+class deleteproposal(Resource):
+#    @token_required
+    def post(current_user):
+        data = request.get_json()
+        update = Proposal.query.filter_by(reg_no=data['reg_no']).first()
+        db.session.delete(update)
+        db.session.commit()
+        return data
+
+class deleteprogressreport(Resource):
+#    @token_required
+    def post(current_user):
+        data = request.get_json()
+        update = Progress_report.query.filter_by(datestamp=data['datestamp']).first()
+        db.session.delete(update)
+        db.session.commit()
+
+
+
+
+
