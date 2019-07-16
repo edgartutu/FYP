@@ -192,7 +192,7 @@ class PostProject(Resource):
         
 class PendingProposal(Resource):
 #    @token_required
-    def get(self,current_user):
+    def get(current_user):
         students = Proposal.query.filter_by(status='pending')
         return [x.json() for x in students]
 
@@ -274,6 +274,38 @@ class preprocessing(Resource):
         proposal.comment = 'Hello'
         db.session.commit()
         return data
+
+class proposaltracker(Resource):
+#    @token_required
+    def get(current_user):
+        proposals = db.session.query(Proposal).count()
+        users = db.session.query(User).count()
+        percentage = (proposals/users)*100
+        return percentage
+
+class approvedtracker(Resource):
+#    @token_required
+    def get(current_user):
+        proposals = db.session.query(Proposal).filter_by(status="Approved").count()
+        users = db.session.query(User).count()
+        percentage = (proposals/users)*100
+        return percentage
+
+class rejectedtracker(Resource):
+#    @token_required
+    def get(current_user):
+        proposals = db.session.query(Rejected_Proposal).count()
+        users = db.session.query(User).count()
+        percentage = (proposals/users)*100
+        return proposals
+
+class pendingtracker(Resource):
+#    @token_required
+    def get(current_user):
+        proposals = db.session.query(Proposal).filter_by(status="pending").count()
+        users = db.session.query(User).count()
+        percentage = (proposals/users)*100
+        return proposals
 
 
 

@@ -3,9 +3,7 @@ from flask_restful import Resource, Api
 from flask_restful import Api
 from project.users.views import Register,Login1,Logout1,ResetPassword,GetAllProjects,PostProposals,ViewPrjects,ViewProposals,PostProgressReport,Previous_topics_by_title,Previous_topics_by_year,UpdateAbstract,resubmitfiles,deleteproposal,deleteprogressreport
 from project.guest.views import Login2,Logout2,AssignedProposal,PostProject_,Reports,ProgressComment
-from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment,ApprovedProposal,viewprojects,viewrejected,allstudents,allguest,allprogressreports1,progressreportquery,proposalbysupervisor,preprocessing
-
-
+from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment,ApprovedProposal,viewprojects,viewrejected,allstudents,allguest,allprogressreports1,progressreportquery,proposalbysupervisor,preprocessing,proposaltracker,approvedtracker,rejectedtracker,pendingtracker
 
 api = Api(app)
 
@@ -46,6 +44,10 @@ api.add_resource(progressreportquery, '/progressreportquery1')
 api.add_resource(proposalbysupervisor, '/proposalbysupervisor')
 # Recheck this route
 api.add_resource(preprocessing, '/preprocessing')
+api.add_resource(proposaltracker, '/proposaltracker')
+api.add_resource(approvedtracker, '/approvedtracker')
+api.add_resource(rejectedtracker, '/rejectedtracker')
+api.add_resource(pendingtracker, '/pendingtracker')
 ##
 api.add_resource(Login2, '/login-guest')
 api.add_resource(Logout2, '/logout-guest')
