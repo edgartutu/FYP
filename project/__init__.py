@@ -15,8 +15,13 @@ app=Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+
 UPLOAD_FOLDER = os.path.join(APP_ROOT,'uploads')
+EXCEL_FOLDER = os.path.join(APP_ROOT,'exports')
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['EXCEL_FOLDER'] = EXCEL_FOLDER
+
 
 CORS(app)
 

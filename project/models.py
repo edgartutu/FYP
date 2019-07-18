@@ -98,7 +98,7 @@ class User(db.Model, UserMixin):
         self.tel2=tel2
 
     def json(self):
-        return {'reg_no':self.reg_no,'student1':self.student1,'reg_no2':self.reg_no2,'email': self.email,'email2': self.email2,'tel': self.tel,'tel2': self.tel2}
+        return {'reg_no':self.reg_no,'student1':self.student1,'student2':self.student2,'reg_no2':self.reg_no2,'email': self.email,'email2': self.email2,'tel': self.tel,'tel2': self.tel2}
         
     def check_password(self,password):
         return check_password_hash(self.password_hash,password)
@@ -185,9 +185,8 @@ class Proposal(db.Model, UserMixin):
     comment = db.Column(db.String(500))
     ## status of the project  
 
-    def __init__(self,id,project_ref,problem_statement,reg_no, methodology, proposal_uploadfile,reg_no2,title,status,supervisor,email,comment,student1,student2):
+    def __init__(self,project_ref,problem_statement,reg_no, methodology, proposal_uploadfile,reg_no2,title,status,supervisor,email,comment,student1,student2):
         self.title = title
-        self.id = id
         self.reg_no = reg_no
         self.project_ref = project_ref
         self.problem_statement = problem_statement
@@ -202,7 +201,7 @@ class Proposal(db.Model, UserMixin):
         self.student2 = student2
 
     def json(self):
-        return {'ref_no':self.id,'project_ref':self.project_ref,'reg_no':self.reg_no,'title':self.title,
+        return {'project_ref':self.project_ref,'reg_no':self.reg_no,'title':self.title,
                 'problem_statement':self.problem_statement, 'methodology':self.methodology,
                 'proposal_uploadfile':self.proposal_uploadfile,
                 'reg_no2':self.reg_no2, 'supervisor':self.supervisor,'status':self.status,'commet':self.comment,
@@ -210,33 +209,40 @@ class Proposal(db.Model, UserMixin):
 
 class Rejected_Proposal(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True, unique=True, index=True)
-    title=db.Column(db.String(100))
     reg_no = db.Column(db.String(25))
+    student1=db.Column(db.String(100))
+    reg_no2 = db.Column(db.String(500))
+    student2 = db.Column(db.String(500))
+    title=db.Column(db.String(100))
     problem_statement = db.Column(db.String(1000))
-    abstract = db.Column(db.String(1000))
-    proposal_uploadfile = db.Column(db.String(2000))
-    student = db.Column(db.String(500))
+    methodology = db.Column(db.String(5000))
+    proposal_uploadfile = db.Column(db.String(100))
     status = db.Column(db.String(50))
     supervisor = db.Column(db.String(120))
     email = db.Column(db.String(500))
-    comment = db.Column(db.String(500)) 
+    comment = db.Column(db.String(500))
+    ## status of the project  
 
-    def __init__(self,reg_no,problem_statement, abstract, proposal_uploadfile, student, student_no,title,status,supervisor,email,comment):
-        self.reg_no = reg_no
+    def __init__(self,problem_statement,reg_no, methodology, proposal_uploadfile,reg_no2,title,status,supervisor,email,comment,student1,student2):
         self.title = title
+        self.reg_no = reg_no
         self.problem_statement = problem_statement
-        self.abstract = abstract
+        self.methodology = methodology
         self.proposal_uploadfile = proposal_uploadfile
-        self.student = student
-        self.student_no = student_no
+        self.reg_no2 = reg_no2
         self.status = status
         self.supervisor = supervisor
         self.email = email
         self.comment = comment
+        self.student1 = student1
+        self.student2 = student2
 
     def json(self):
-        return {'reg_no':self.reg_no,'title':self.title,'problem_statement':self.problem_statement, 'abstract':self.abstract,
-                'proposal_uploadfile':self.proposal_uploadfile, 'supervisor':self.supervisor,'status':self.status,'comment':self.comment}
+        return {'reg_no':self.reg_no,'title':self.title,
+                'problem_statement':self.problem_statement, 'methodology':self.methodology,
+                'proposal_uploadfile':self.proposal_uploadfile,
+                'reg_no2':self.reg_no2, 'supervisor':self.supervisor,'status':self.status,'commet':self.comment,
+                'student1':self.student1,'student2':self.student2,'proposal_upload':self.proposal_uploadfile}
 
 
 db.create_all()

@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 from flask_restful import Api
 from project.users.views import Register,Login1,Logout1,ResetPassword,GetAllProjects,PostProposals,ViewPrjects,ViewProposals,PostProgressReport,Previous_topics_by_title,Previous_topics_by_year,UpdateAbstract,resubmitfiles,deleteproposal,deleteprogressreport
 from project.guest.views import Login2,Logout2,AssignedProposal,PostProject_,Reports,ProgressComment
-from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment,ApprovedProposal,viewprojects,viewrejected,allstudents,allguest,allprogressreports1,progressreportquery,proposalbysupervisor,preprocessing,proposaltracker,approvedtracker,rejectedtracker,pendingtracker
+from project.admin.views import Login,Logout,ApproveProject,PostProject,PendingProposal,ProposalComment,ApprovedProposal,viewprojects,viewrejected,allstudents,allguest,allprogressreports1,progressreportquery,proposalbysupervisor,preprocessing,proposaltracker,approvedtracker,rejectedtracker,pendingtracker,pendingfiles,excelexport,AllProposals
 
 api = Api(app)
 
@@ -36,12 +36,16 @@ api.add_resource(ProposalComment, '/proposalcomment')
 api.add_resource(ApprovedProposal, '/approved')
 api.add_resource(viewprojects, '/adminviewprojects')
 api.add_resource(viewrejected, '/viewrejected')
+api.add_resource(pendingfiles, '/pendingfiles')
+api.add_resource(excelexport, '/excelexport')
 # Not yet connected to admin dash board
 api.add_resource(allstudents, '/allstudents')
 api.add_resource(allguest, '/allguest')
 api.add_resource(allprogressreports1, '/allprogressreports')
 api.add_resource(progressreportquery, '/progressreportquery1')
 api.add_resource(proposalbysupervisor, '/proposalbysupervisor')
+api.add_resource(excelexport, '/excelexport')
+api.add_resource(AllProposals, '/proposals')
 # Recheck this route
 api.add_resource(preprocessing, '/preprocessing')
 api.add_resource(proposaltracker, '/proposaltracker')

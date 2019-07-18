@@ -17,6 +17,11 @@ import jwt
 from functools import wraps
 import json
 import random
+from flask import send_file
+import flask_excel as excel
+import pyexcel
+import uuid
+
 
 api = Api(app)
 
@@ -143,15 +148,20 @@ class ApproveProject(Resource):
                 
                 title = rejected.title
                 reg_no = data['reg_no']
+                reg_no2 = rejected.reg_no2
                 problem_statment = rejected.problem_statement
-                abstact = rejected.abstract
-                proposal_uploadfile = rejected.proposal_uploadfile.encode('utf-8')
-                student = rejected.student_pair
+                methodology = rejected.methodology
+                proposal_uploadfile = rejected.proposal_uploadfile
+                student1 = rejected.student1
+                student2 = rejected.student2
                 status = 'Rejected'
                 supervisor = 'None'
                 email = 'None'
                 comment = data['comment']
-                insert = Rejected_Proposal(title,reg_no,problem_statment,abstact,proposal_uploadfile,student,status,supervisor,email,comment)
+                insert = Rejected_Proposal(title=title,reg_no=reg_no,reg_no2=reg_no2,problem_statement=problem_statment,
+                                           methodology=methodology,proposal_uploadfile=proposal_uploadfile,
+                                           student1=student1,student2=student2,status=status,
+                                           supervisor=supervisor,email=email,comment=comment)
                 db.session.add(insert)
                 db.session.delete(rejected)
                 db.session.commit()
@@ -181,7 +191,6 @@ class PostProject(Resource):
         db.session.commit()
         return {'status':'succces'}
 
-#    @token_required
     def put(self,current_user):
         data = request.get_json()
         proj=Project.query.filter_by(title=data['title']).first()
@@ -195,6 +204,22 @@ class PendingProposal(Resource):
     def get(current_user):
         students = Proposal.query.filter_by(status='pending')
         return [x.json() for x in students]
+
+class pendingfiles(Resource):
+#    @token_required
+    def post(current_user):
+        data = request.get_json()
+        reg_no = data['reg_no']
+        students = Proposal.query.filter_by(reg_no=reg_no).first()
+        name = students.json()["proposal_uploadfile"]
+        path1 = app.config['UPLOAD_FOLDER']
+        #return send_file(app.config['UPLOAD_FOLDER'],attachment_filename=name)
+
+        return os.path.join(os.path.join(app.config['UPLOAD_FOLDER'],name))
+
+        #uploads = os.path.join(os.path.join(app.config['UPLOAD_FOLDER'],newFilename)
+        #return send_from_directory(directory=uploads, filename=students.json()["proposal_uploadfile"])
+        #return students.json()["proposal_uploadfile"]
 
 class ProposalComment(Resource):
 #    @token_required
@@ -210,6 +235,7 @@ class ProposalComment(Resource):
 ####        Proposal.comment = request.form['comment']
 ##        Proposal.comment=comment
 ##        db.session.commit()
+
 class ApprovedProposal(Resource):
 #   @token_required
    def get(current_user):
@@ -271,7 +297,7 @@ class preprocessing(Resource):
         reg_no = data['reg_no']
         comment = data['comment']
         proposal = Proposal.query.filter_by(reg_no=reg_no).first()
-        proposal.comment = 'Hello'
+        proposal.comment = comment
         db.session.commit()
         return data
 
@@ -280,34 +306,64 @@ class proposaltracker(Resource):
     def get(current_user):
         proposals = db.session.query(Proposal).count()
         users = db.session.query(User).count()
-        percentage = (proposals/users)*100
-        return percentage
+        try:
+            percentage = (proposals/users)*100
+            return percentage
+        except Exception:
+            return 0
 
 class approvedtracker(Resource):
 #    @token_required
     def get(current_user):
         proposals = db.session.query(Proposal).filter_by(status="Approved").count()
         users = db.session.query(User).count()
-        percentage = (proposals/users)*100
-        return percentage
+        try:
+            percentage = (proposals/users)*100
+            return percentage
+        except Exception:
+            return 0
 
 class rejectedtracker(Resource):
 #    @token_required
     def get(current_user):
         proposals = db.session.query(Rejected_Proposal).count()
         users = db.session.query(User).count()
-        percentage = (proposals/users)*100
-        return proposals
+        try:
+            percentage = (proposals/users)*100
+            return percentage
+        except Exception:
+            return 0
 
 class pendingtracker(Resource):
 #    @token_required
     def get(current_user):
         proposals = db.session.query(Proposal).filter_by(status="pending").count()
         users = db.session.query(User).count()
-        percentage = (proposals/users)*100
-        return proposals
+        try:
+            percentage = (proposals/users)*100
+            return percentage
+        except Exception:
+            return 0
 
+class excelexport(Resource):
+#    @token_required
+    def get(current_user):
+        query_sets = Proposal.query.filter_by(status="Approved")
+        #column_names = ['id','reg_no', 'student1','reg_no2', 'student2','title', 'problem_statement','methodology', 'proposal_uploadfile','status', 'supervisor','email', 'comment']
+        #excel.make_response_from_query_sets(query_sets, column_names, "xls",file_name='export.xls')
+        #return {"hi":"me"}
 
+        autoGenFileName = uuid.uuid4()
+        filename = str(autoGenFileName)+".xls"
+        dictionary1 = [x.json() for x in query_sets]
 
+        pyexcel.save_as(records=dictionary1, dest_file_name=os.path.join(app.config['EXCEL_FOLDER'],filename))
 
+        return dictionary1
 
+class AllProposals(Resource):
+##    @token_required
+##    @staticmethod
+    def get(current_user):
+        students = Proposal.query.all()
+        return [x.json() for x in students]

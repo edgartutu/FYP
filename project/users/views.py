@@ -159,18 +159,13 @@ class PostProposals(Resource):
         reg_no2 = data['reg_no2']
         student1 = data['student1']
         student2 = data['student2']
-
         file = request.files['file']
         filename = secure_filename(file.filename)
-        
         fileExt = filename.split('.')[1]
         autoGenFileName = uuid.uuid4()
-
         newFilename = str(autoGenFileName)+'.'+fileExt
-
         file.save(os.path.join(app.config['UPLOAD_FOLDER'],newFilename))
-
-        '''Done not forget to change the proposal upload to a byte type object'''
+#        filename = str(app.config['UPLOAD_FOLDER'])+'\\'+str(newFilename)
 ##        header = {'Content-Type':'text/html'}    
 ##        form = Proposal_submittion_Form()   
         status = 'pending'
@@ -178,7 +173,7 @@ class PostProposals(Resource):
         email = 'None'
         comment = 'None'
 
-        p_upload = Proposal(title=title,reg_no=reg_no,proposal_ref=proposal_ref,problem_statement=problem_statement,
+        p_upload = Proposal(title=title,reg_no=reg_no,project_ref=proposal_ref,problem_statement=problem_statement,
                             methodology=methodology ,reg_no2=reg_no2,proposal_uploadfile=newFilename,
                             status=status,supervisor=supervisor,email=email,
                             comment=comment,student1=student1,student2=student2)

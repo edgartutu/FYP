@@ -130,7 +130,9 @@ class AssignedProposal(Resource):
     @token_required
 ##    @staticmethod  
     def get(current_user):
-        project = Proposal.query.all()
+        data = request.get_json()
+        email = data['email']
+        project = Proposal.query.filter_by(email=email)
         ## will need to iterate through the recode project like the for loop
         return [x.json() for x in project]
 
