@@ -1,5 +1,5 @@
 from project import app, db
-from project.models import User, Admin, Proposal, Department,Project,Rejected_Proposal,Guest,Progress_report
+from project.models import User, Admin, Proposal, Department,Project,Rejected_Proposal,Guest,Progress_report,ExportApproved
 from flask_restful import Resource, Api
 from flask import flash, redirect, render_template, request, url_for,make_response
 from flask_login import login_user,login_required, logout_user
@@ -17,44 +17,14 @@ import jwt
 from functools import wraps
 import json
 import random
-from flask import send_file
+from flask import send_file, send_from_directory, safe_join, abort
 import flask_excel as excel
 import pyexcel
 import uuid
+import time
 
 
 api = Api(app)
-
-##class Login(Resource):
-##    @staticmethod
-##    @login_required
-##    def post():
-##        error=None
-##        form = LoginForm(request.form)
-##        try:
-##            email, password = request.json.get('email').strip(), request.json.get('password').strip()
-##            print(email , password)
-##        except Exception as why:
-##            logging.info("reg_no or password is wrong. " + str(why))
-##            flash ('status: invalid input.')
-##        if email is None or password is None:
-##            flash ('status: user information is none.') 
-##        
-##        if request.method =='POST':
-##            if form.validate_on_submit():
-##                admin = Admin.query.filter_by(email=email, password=password).first()
-##                if admin is None:
-##                    flash ('status: user doesnt exist.')
-##                elif admin is not None and check_password_hash(
-##                    user.password, request.form['password']):
-##                    login_user(admin)
-##                    flash('You were logged in.')
-####                    return redirect(url_for())
-##                else:
-##                    error = 'Invalid email or password'
-##        return make_response(render_template('adminlogin.html',form=form))
-##        return render_template('login.html',form=form,error=error)
-
 
 def token_required(f):
     @wraps(f)
@@ -76,19 +46,20 @@ def token_required(f):
     return decorated
     
 class Login(Resource):
-    def get(self):
-        auth = request.get_json()
+    def post(self):
+        #auth = request.get_json()
+        data = request.get_json()
         '''checking if authorization information is complete'''
-        if not auth or not auth.username or not auth.password:
-            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})        
-        admin = Admin.query.filter_by(email=auth.username).first()
+        if not data or not data['username'] or not data['password']:
+            return make_response('Could not verify1',401,{'www-Authenticate':'Basic realm-"login required!"'})
+        admin = Admin.query.filter_by(email=data['username']).first()
         
         if not admin:
             return make_response('Could not verify2',401,{'www-Authenticate':'Basic realm-"login required!"'})       
 
-        if admin.password == auth.password:
+        if admin.password == data['password']:
             token = jwt.encode({'public_id':admin.publicID,'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)},app.config['SECRET_KEY'])
-            return jsonify({'token':token.decode('UTF-8')})
+            return jsonify({'token':token.decode('UTF-8'),'username':admin.publicID})
         return make_response('Could not verify3',401,{'www-Authenticate':'Basic realm-"login required!"'})
 
 class Logout(Resource):
@@ -127,6 +98,7 @@ class ApproveProject(Resource):
     def post(current_user):
         data = request.get_json()
         student = Proposal.query.filter_by(reg_no=data["reg_no"]).first()
+        user = User.query.filter_by(reg_no=data["reg_no"]).first()
         
         if student is not None:
 ##            Proposal.json(self)
@@ -136,12 +108,18 @@ class ApproveProject(Resource):
             status = data["status"]
             
             if status == "Approved":
+                x = uuid.uuid4()
+                y = str(x)
+                course = user.course
+                id = 'ECE-'+course+'-'+y[:8]
+                student.id = id
                 student.status = data["status"]
                 student.supervisor = data["supervisor"]
                 student.email = data["email"]
                 student.comment = data["comment"]
                 db.session.commit()
                 return data
+
             elif status == 'Rejected':
                 rejected = Proposal.query.filter_by(reg_no=data['reg_no']).first()
                 new_data = []
@@ -179,8 +157,11 @@ class PostProject(Resource):
 #    @token_required
     def post(current_user):
         data = request.get_json()
+        x = uuid.uuid4()
+        y = str(x)
+        ref_id = 'ECE-'+'L-'+y[:8]
         p=str(datetime.date.today())
-        fln = Project(title=data['title'] ,comments=data['comments'],date_submit=p)
+        fln = Project(ref_no=ref_id,title=data['title'] ,comments=data['comments'],date_submit=p)
         db.session.add(fln)
         db.session.commit()
         
@@ -189,7 +170,7 @@ class PostProject(Resource):
         proj=Project.query.filter_by(title=data['title']).first()
         db.session.delete(proj)
         db.session.commit()
-        return {'status':'succces'}
+        return {'status':'success'}
 
     def put(self,current_user):
         data = request.get_json()
@@ -210,16 +191,36 @@ class pendingfiles(Resource):
     def post(current_user):
         data = request.get_json()
         reg_no = data['reg_no']
+        #reg_no = '3'
         students = Proposal.query.filter_by(reg_no=reg_no).first()
         name = students.json()["proposal_uploadfile"]
-        path1 = app.config['UPLOAD_FOLDER']
+        #path1 = app.config['UPLOAD_FOLDER']
+        #file = open(os.path.join(os.path.join(app.config['UPLOAD_FOLDER'],name)), 'rb')
+        #return {"file":file}
+        #return send_file(app.config['UPLOAD_FOLDER'],attachment_filename=name)
+        try:
+            return send_from_directory(app.config['UPLOAD_FOLDER'],filename=name, as_attachment=True)
+
+        except FileNotFoundError:
+            abort(404)
+
+        #return os.path.join(os.path.join(app.config['UPLOAD_FOLDER'],name))
+
         #return send_file(app.config['UPLOAD_FOLDER'],attachment_filename=name)
 
-        return os.path.join(os.path.join(app.config['UPLOAD_FOLDER'],name))
+class progressfiles(Resource):
+#    @token_required
+    def post(current_user):
+        data = request.get_json()
+        reg_no = data['reg_no']
+        #reg_no = '3'
+        students = Progress_report.query.filter_by(reg_no=reg_no).first()
+        name = students.json()["files"]
+        try:
+            return send_from_directory(app.config['UPLOAD_FOLDER'],filename=name, as_attachment=True)
 
-        #uploads = os.path.join(os.path.join(app.config['UPLOAD_FOLDER'],newFilename)
-        #return send_from_directory(directory=uploads, filename=students.json()["proposal_uploadfile"])
-        #return students.json()["proposal_uploadfile"]
+        except FileNotFoundError:
+            abort(404)
 
 class ProposalComment(Resource):
 #    @token_required
@@ -243,7 +244,7 @@ class ApprovedProposal(Resource):
         return [x.json() for x in students]
 
 class viewprojects(Resource):
-    @token_required
+ #   @token_required
     def get(current_user):
         students = Project.query.all()
         return [x.json() for x in students]
@@ -345,21 +346,25 @@ class pendingtracker(Resource):
         except Exception:
             return 0
 
-class excelexport(Resource):
+class excelexport1(Resource):
 #    @token_required
-    def get(current_user):
+    def post(current_user):
         query_sets = Proposal.query.filter_by(status="Approved")
-        #column_names = ['id','reg_no', 'student1','reg_no2', 'student2','title', 'problem_statement','methodology', 'proposal_uploadfile','status', 'supervisor','email', 'comment']
-        #excel.make_response_from_query_sets(query_sets, column_names, "xls",file_name='export.xls')
-        #return {"hi":"me"}
-
         autoGenFileName = uuid.uuid4()
-        filename = str(autoGenFileName)+".xls"
+        filename1 = str(autoGenFileName)+".xls"
+        #filename1 = "ApprovedStudentsExport.xls"
         dictionary1 = [x.json() for x in query_sets]
+        try:
 
-        pyexcel.save_as(records=dictionary1, dest_file_name=os.path.join(app.config['EXCEL_FOLDER'],filename))
+            pyexcel.save_as(records=dictionary1, dest_file_name=os.path.join(app.config['EXCEL_FOLDER'],filename1))
+            #download(filename1)
+            return send_from_directory(app.config['EXCEL_FOLDER'],filename=filename1, as_attachment=True)
 
-        return dictionary1
+        except FileNotFoundError:
+            abort(404)
+
+#def download(name):
+#    return send_from_directory(app.config['EXCEL_FOLDER'],filename=name, as_attachment=True)
 
 class AllProposals(Resource):
 ##    @token_required
@@ -367,3 +372,4 @@ class AllProposals(Resource):
     def get(current_user):
         students = Proposal.query.all()
         return [x.json() for x in students]
+

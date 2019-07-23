@@ -95,6 +95,9 @@ class PostProject_(Resource):
 ##    @staticmethod
     def post(self,current_user):
         data = request.get_json()
+        x = uuid.uuid4()
+        y = str(x)
+        ref_id = y[:8]
 ##        form = ProjectForm(request.form)
         ## formate date
 ##        date_submit = datetime.date.today()
@@ -102,7 +105,7 @@ class PostProject_(Resource):
 ##        if request.method == 'post':
                ## return redirect(request.url)
         p=datetime.date.today()
-        fln = Project(title=data['title'] ,comments=data['comments'],date_submit=p)
+        fln = Project(ref_no=ref_id,title=data['title'] ,comments=data['comments'],date_submit=p)
         db.session.add(fln)
         db.session.commit()
         return fln.json()

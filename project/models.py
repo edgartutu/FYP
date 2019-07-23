@@ -82,43 +82,50 @@ class User(db.Model, UserMixin):
     publicID = db.Column(db.String(100))
     email = db.Column(db.String(30))
     email2 = db.Column(db.String(100))
+    course = db.Column(db.String(5))
     tel = db.Column(db.String(100))
     tel2 = db.Column(db.String(100))
     password_hash = db.Column(db.String(128))
 
-    def __init__(self, email, password, reg_no,student1,reg_no2,student2,email2,tel,tel2):
+    def __init__(self, email, password_hash, reg_no,student1,reg_no2,student2,email2,tel,tel2,course):
         self.reg_no = reg_no
         self.email=email
-        self.password_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password_hash)
         self.student1=student1
         self.reg_no2=reg_no2
         self.student2=student2
         self.email2=email2
         self.tel=tel
         self.tel2=tel2
+        self.course = course
 
     def json(self):
-        return {'reg_no':self.reg_no,'student1':self.student1,'student2':self.student2,'reg_no2':self.reg_no2,'email': self.email,'email2': self.email2,'tel': self.tel,'tel2': self.tel2}
+        return {'reg_no':self.reg_no,'student1':self.student1,'student2':self.student2,
+                'reg_no2':self.reg_no2,'email': self.email,'email2': self.email2,'tel': self.tel,'tel2': self.tel2,
+                'password_hash':password_hash,'course': self.course}
         
-    def check_password(self,password):
-        return check_password_hash(self.password_hash,password)
+    def check_password(self,password_hash):
+        return check_password_hash(self.password_hash,password_hash)
 
 class Progress_report(db.Model, UserMixin):
     __tablename__='progress_reports'
     id = db.Column(db.Integer(),primary_key=True)
     reg_no = db.Column(db.String(25))
     supervisor_email = db.Column(db.String(25))
+    comment = db.Column(db.String(200))
     files = db.Column(db.String(100))
     datestamp = db.Column(db.String(100))
 
-    def __init__(self,reg_no,files,supervisor_email,datestamp):
+    def __init__(self,reg_no,files,supervisor_email,datestamp,comment):
         self.reg_no = reg_no
         self.files = files
         self.supervisor_email=supervisor_email
         self.datestamp=datestamp
+        self.comment = comment
 
     def json(self):
-        return {'reg_no':self.reg_no,'files':self.files,'supervisor_email':self.supervisor_email,'datestamp': self.datestamp}
+        return {'reg_no':self.reg_no,'files':self.files,'supervisor_email':self.supervisor_email,
+                'datestamp': self.datestamp,'comment':self.comment}
 
 class Previous_topic(db.Model,UserMixin):
     __tablename__='previous_topics'
@@ -148,15 +155,12 @@ class Progress_comment(db.Model,UserMixin):
     
 class Project(db.Model, UserMixin):
     __tablename__ = 'projects'
-    ref_no = db.Column(db.Integer,primary_key=True)
+    ref_no = db.Column(db.String(50),primary_key=True)
     title = db.Column(db.String(500))
-##    reg_no = db.Column(db.String(25), primary_key=True, unique=True, index=True)
-##    report_uploadfile = db.Column(db.LargeBinary)
     comments = db.Column(db.String(500))
     date_submit = db.Column(db.String(50))
 
-    def __init__(self,ref_no, title,comments,
-                 date_submit):
+    def __init__(self,ref_no, title,comments,date_submit):
         self.ref_no = ref_no
         self.title = title
 ##        self.student_regno = student_regno
@@ -165,6 +169,17 @@ class Project(db.Model, UserMixin):
 
     def json(self):
         return {'ref_no':self.ref_no,'title':self.title, 'comments':self.comments,'date_submit': self.date_submit}
+
+class ExportApproved(db.Model, UserMixin):
+    __tablename__ = 'ApprovedExports'
+    id = db.Column(db.Integer,primary_key=True)
+    name = db.Column(db.String(500))
+
+    def __init__(self,name):
+        self.name = name
+
+    def json(self):
+        return {"name":self.name}
 
 
 class Proposal(db.Model, UserMixin):
@@ -185,7 +200,8 @@ class Proposal(db.Model, UserMixin):
     comment = db.Column(db.String(500))
     ## status of the project  
 
-    def __init__(self,project_ref,problem_statement,reg_no, methodology, proposal_uploadfile,reg_no2,title,status,supervisor,email,comment,student1,student2):
+    def __init__(self,id,project_ref,problem_statement,reg_no, methodology, proposal_uploadfile,reg_no2,title,status,supervisor,email,comment,student1,student2):
+        self.id = id
         self.title = title
         self.reg_no = reg_no
         self.project_ref = project_ref
@@ -201,7 +217,7 @@ class Proposal(db.Model, UserMixin):
         self.student2 = student2
 
     def json(self):
-        return {'project_ref':self.project_ref,'reg_no':self.reg_no,'title':self.title,
+        return {'id':self.id,'project_ref':self.project_ref,'reg_no':self.reg_no,'title':self.title,
                 'problem_statement':self.problem_statement, 'methodology':self.methodology,
                 'proposal_uploadfile':self.proposal_uploadfile,
                 'reg_no2':self.reg_no2, 'supervisor':self.supervisor,'status':self.status,'commet':self.comment,
